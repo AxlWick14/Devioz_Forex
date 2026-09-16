@@ -1,0 +1,28 @@
+{
+    "error": false,
+    "updatedAt": 1789590840,
+    "source": "Twelve Data",
+    "cached": false,
+    "quotes": {
+        "USD/PEN": 3.35807,
+        "EUR/USD": 1.1463,
+        "GBP/USD": 1.33778,
+        "USD/JPY": 156.38793,
+        "BTC/USD": 76218,
+        "ETH/USD": 2413.6,
+        "SOL/USD": 98.69,
+        "XRP/USD": 1.3045
+    },
+    "usdValue": {
+        "USD": 1,
+        "PEN": 0.29779009967034636,
+        "EUR": 1.1463,
+        "GBP": 1.33778,
+        "JPY": 0.006394355370008414,
+        "BTC": 76218,
+        "ETH": 2413.6,
+        "SOL": 98.69,
+        "XRP": 1.3045
+    },
+    "unavailable": []
+}
