@@ -11,6 +11,10 @@ class Router
             'mercado' => ['HomeController', 'mercado'],
             'calculadora' => ['HomeController', 'calculadora'],
             'historial' => ['HomeController', 'historial'],
+            'dashboard' => ['HomeController', 'dashboard'],
+            'etl' => ['HomeController', 'etl'],
+            'pronosticos' => ['HomeController', 'pronosticos'],
+            'alertas' => ['HomeController', 'alertas'],
             'api/mercado' => ['CotizacionController', 'mercado'],
         ];
 

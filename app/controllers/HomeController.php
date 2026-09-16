@@ -25,4 +25,24 @@ class HomeController extends Controller
     {
         $this->view('public/historial', ['titulo' => 'Historial | Forex System']);
     }
+
+    public function dashboard(): void
+    {
+        $this->view('public/dashboard', ['titulo' => 'Dashboard | Forex System']);
+    }
+
+    public function etl(): void
+    {
+        $this->view('public/etl', ['titulo' => 'Proceso ETL | Forex System']);
+    }
+
+    public function pronosticos(): void
+    {
+        $this->view('public/pronosticos', ['titulo' => 'Pronósticos | Forex System']);
+    }
+
+    public function alertas(): void
+    {
+        $this->view('public/alertas', ['titulo' => 'Alertas | Forex System']);
+    }
 }

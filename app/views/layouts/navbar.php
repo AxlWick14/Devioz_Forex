@@ -12,6 +12,10 @@
             <a href="<?= BASE_URL ?>mercado">Mercado</a>
             <a href="<?= BASE_URL ?>calculadora">Calculadora</a>
             <a href="<?= BASE_URL ?>historial">Historial</a>
+            <a href="<?= BASE_URL ?>dashboard">Dashboard</a>
+            <a href="<?= BASE_URL ?>etl">ETL</a>
+            <a href="<?= BASE_URL ?>pronosticos">Pronósticos</a>
+            <a href="<?= BASE_URL ?>alertas">Alertas</a>
         </nav>
     </div>
 </header>
