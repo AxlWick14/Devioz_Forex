@@ -61,11 +61,6 @@ require __DIR__ . '/../layouts/navbar.php';
                     <small>Libra / Dólar</small>
                 </article>
 
-                <article class="quote-card">
-                    <span>USD / JPY</span>
-                    <strong id="quote-USD-JPY">Cargando...</strong>
-                    <small>Dólar / Yen</small>
-                </article>
             </div>
         </section>
 
@@ -122,7 +117,6 @@ require __DIR__ . '/../layouts/navbar.php';
                             <option value="USD">USD - Dólar</option>
                             <option value="EUR">EUR - Euro</option>
                             <option value="GBP">GBP - Libra</option>
-                            <option value="JPY">JPY - Yen</option>
                             <option value="BTC">BTC - Bitcoin</option>
                             <option value="ETH">ETH - Ethereum</option>
                             <option value="SOL">SOL - Solana</option>
@@ -139,7 +133,6 @@ require __DIR__ . '/../layouts/navbar.php';
                             <option value="PEN">PEN - Sol peruano</option>
                             <option value="EUR">EUR - Euro</option>
                             <option value="GBP">GBP - Libra</option>
-                            <option value="JPY">JPY - Yen</option>
                             <option value="BTC">BTC - Bitcoin</option>
                             <option value="ETH">ETH - Ethereum</option>
                             <option value="SOL">SOL - Solana</option>
@@ -171,6 +164,6 @@ require __DIR__ . '/../layouts/navbar.php';
     </section>
 </main>
 
-<script src="<?= BASE_URL ?>assets/js/calculadora.js"></script>
+<script src="<?= BASE_URL ?>assets/js/calculadora.js?v=<?= (int) filemtime(__DIR__ . '/../../../public/assets/js/calculadora.js') ?>"></script>
 
 <?php require __DIR__ . '/../layouts/footer.php'; ?>

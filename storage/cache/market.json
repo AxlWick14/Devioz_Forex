@@ -1,28 +1,117 @@
 {
     "error": false,
-    "updatedAt": 1789590840,
+    "updatedAt": 1789592400,
     "source": "Twelve Data",
     "cached": false,
     "quotes": {
-        "USD/PEN": 3.35807,
-        "EUR/USD": 1.1463,
-        "GBP/USD": 1.33778,
-        "USD/JPY": 156.38793,
-        "BTC/USD": 76218,
-        "ETH/USD": 2413.6,
-        "SOL/USD": 98.69,
-        "XRP/USD": 1.3045
+        "USD/PEN": 3.36038,
+        "EUR/USD": 1.14622,
+        "GBP/USD": 1.33838,
+        "EUR/GBP": 0.85641,
+        "BTC/USD": 76101.99,
+        "ETH/USD": 2409.21,
+        "SOL/USD": 98.39,
+        "XRP/USD": 1.2953
+    },
+    "marketDetails": {
+        "USD/PEN": {
+            "symbol": "USD/PEN",
+            "close": 3.36038,
+            "open": 3.35808,
+            "high": 3.36553,
+            "low": 3.35672,
+            "previousClose": 3.35807,
+            "change": 0.00231,
+            "percentChange": 0.068789513,
+            "trend": "alcista"
+        },
+        "EUR/USD": {
+            "symbol": "EUR/USD",
+            "close": 1.14622,
+            "open": 1.14648,
+            "high": 1.14666,
+            "low": 1.14587,
+            "previousClose": 1.14635,
+            "change": -0.00013,
+            "percentChange": -0.011340341,
+            "trend": "bajista"
+        },
+        "GBP/USD": {
+            "symbol": "GBP/USD",
+            "close": 1.33838,
+            "open": 1.33807,
+            "high": 1.33958,
+            "low": 1.33729,
+            "previousClose": 1.33802,
+            "change": 0.00036,
+            "percentChange": 0.026905427,
+            "trend": "alcista"
+        },
+        "EUR/GBP": {
+            "symbol": "EUR/GBP",
+            "close": 0.85641,
+            "open": 0.85682,
+            "high": 0.8576,
+            "low": 0.85522,
+            "previousClose": 0.85683,
+            "change": -0.00042,
+            "percentChange": -0.049017892,
+            "trend": "bajista"
+        },
+        "BTC/USD": {
+            "symbol": "BTC/USD",
+            "close": 76101.99,
+            "open": 75644.48,
+            "high": 76560.76,
+            "low": 75064.82,
+            "previousClose": 75644.48,
+            "change": 457.51,
+            "percentChange": 0.60481611,
+            "trend": "alcista"
+        },
+        "ETH/USD": {
+            "symbol": "ETH/USD",
+            "close": 2409.21,
+            "open": 2398.26,
+            "high": 2430.64,
+            "low": 2369.11,
+            "previousClose": 2398.26,
+            "change": 10.95,
+            "percentChange": 0.45658102,
+            "trend": "alcista"
+        },
+        "SOL/USD": {
+            "symbol": "SOL/USD",
+            "close": 98.39,
+            "open": 96.88,
+            "high": 98.94,
+            "low": 96.09,
+            "previousClose": 96.88,
+            "change": 1.51,
+            "percentChange": 1.55863,
+            "trend": "alcista"
+        },
+        "XRP/USD": {
+            "symbol": "XRP/USD",
+            "close": 1.2953,
+            "open": 1.2833,
+            "high": 1.3184,
+            "low": 1.2468,
+            "previousClose": 1.2833,
+            "change": 0.012,
+            "percentChange": 0.93508922,
+            "trend": "alcista"
+        }
     },
     "usdValue": {
         "USD": 1,
-        "PEN": 0.29779009967034636,
-        "EUR": 1.1463,
-        "GBP": 1.33778,
-        "JPY": 0.006394355370008414,
-        "BTC": 76218,
-        "ETH": 2413.6,
-        "SOL": 98.69,
-        "XRP": 1.3045
+        "PEN": 0.2975853921282712,
+        "EUR": 1.14622,
+        "GBP": 1.33838,
+        "BTC": 76101.99,
+        "ETH": 2409.21,
+        "SOL": 98.39,
+        "XRP": 1.2953
     },
     "unavailable": []
 }

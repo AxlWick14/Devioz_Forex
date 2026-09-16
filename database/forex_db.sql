@@ -25,7 +25,6 @@ INSERT IGNORE INTO divisas (codigo,nombre,simbolo,tipo) VALUES
 ('PEN','Sol peruano','S/','FIAT'),
 ('EUR','Euro','€','FIAT'),
 ('GBP','Libra esterlina','£','FIAT'),
-('JPY','Yen japonés','¥','FIAT'),
 ('BTC','Bitcoin','₿','CRYPTO'),
 ('ETH','Ethereum','ETH','CRYPTO'),
 ('SOL','Solana','SOL','CRYPTO'),

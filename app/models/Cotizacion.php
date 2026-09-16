@@ -7,7 +7,7 @@ class Cotizacion
         'USD/PEN',
         'EUR/USD',
         'GBP/USD',
-        'USD/JPY',
+        'EUR/GBP',
         'BTC/USD',
         'ETH/USD',
         'SOL/USD',
@@ -30,6 +30,7 @@ class Cotizacion
 
         $rawQuotes = $this->consultarSimbolosEnParalelo($this->symbols);
         $quotes = [];
+        $marketDetails = [];
         $timestamps = [];
         $unavailable = [];
 
@@ -38,11 +39,13 @@ class Cotizacion
 
             if ($quote === null) {
                 $quotes[$symbol] = null;
+                $marketDetails[$symbol] = null;
                 $unavailable[] = $symbol;
                 continue;
             }
 
             $quotes[$symbol] = $quote['rate'];
+            $marketDetails[$symbol] = $quote['details'];
             $timestamps[] = $quote['timestamp'];
         }
 
@@ -51,7 +54,6 @@ class Cotizacion
             'PEN' => $this->invertir($quotes['USD/PEN'] ?? null),
             'EUR' => $quotes['EUR/USD'] ?? null,
             'GBP' => $quotes['GBP/USD'] ?? null,
-            'JPY' => $this->invertir($quotes['USD/JPY'] ?? null),
             'BTC' => $quotes['BTC/USD'] ?? null,
             'ETH' => $quotes['ETH/USD'] ?? null,
             'SOL' => $quotes['SOL/USD'] ?? null,
@@ -64,6 +66,7 @@ class Cotizacion
             'source' => 'Twelve Data',
             'cached' => false,
             'quotes' => $quotes,
+            'marketDetails' => $marketDetails,
             'usdValue' => $usdValue,
             'unavailable' => $unavailable,
         ];
@@ -82,7 +85,7 @@ class Cotizacion
 
         foreach ($symbols as $symbol) {
             $url = TWELVE_DATA_BASE_URL
-                . '/exchange_rate?symbol=' . urlencode($symbol)
+                . '/quote?symbol=' . urlencode($symbol)
                 . '&apikey=' . urlencode(TWELVE_DATA_API_KEY);
 
             $ch = curl_init();
@@ -113,10 +116,29 @@ class Cotizacion
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $data = json_decode($response, true);
 
-            if ($httpCode === 200 && is_array($data) && isset($data['rate'])) {
+            if ($httpCode === 200 && is_array($data) && isset($data['close'])) {
+                $close = (float) $data['close'];
+                $open = $this->numeroOpcional($data['open'] ?? null);
+                $high = $this->numeroOpcional($data['high'] ?? null);
+                $low = $this->numeroOpcional($data['low'] ?? null);
+                $previousClose = $this->numeroOpcional($data['previous_close'] ?? null);
+                $change = $this->numeroOpcional($data['change'] ?? null);
+                $percentChange = $this->numeroOpcional($data['percent_change'] ?? null);
+
                 $results[$symbol] = [
-                    'rate' => (float) $data['rate'],
+                    'rate' => $close,
                     'timestamp' => (int) ($data['timestamp'] ?? time()),
+                    'details' => [
+                        'symbol' => $symbol,
+                        'close' => $close,
+                        'open' => $open,
+                        'high' => $high,
+                        'low' => $low,
+                        'previousClose' => $previousClose,
+                        'change' => $change,
+                        'percentChange' => $percentChange,
+                        'trend' => $this->obtenerTendencia($percentChange),
+                    ],
                 ];
             } else {
                 $results[$symbol] = null;
@@ -138,6 +160,20 @@ class Cotizacion
         return 1 / $value;
     }
 
+    private function numeroOpcional($value): ?float
+    {
+        return is_numeric($value) ? (float) $value : null;
+    }
+
+    private function obtenerTendencia(?float $percentChange): string
+    {
+        if ($percentChange === null || $percentChange == 0.0) {
+            return 'estable';
+        }
+
+        return $percentChange > 0 ? 'alcista' : 'bajista';
+    }
+
     private function cachePath(): string
     {
         return __DIR__ . '/../../storage/cache/market.json';
@@ -153,7 +189,12 @@ class Cotizacion
 
         $data = json_decode((string) file_get_contents($path), true);
 
-        if (!is_array($data) || !isset($data['quotes'], $data['usdValue'])) {
+        if (
+            !is_array($data)
+            || !isset($data['quotes'], $data['marketDetails'], $data['usdValue'])
+            || array_key_exists('USD/JPY', $data['quotes'])
+            || array_key_exists('JPY', $data['usdValue'])
+        ) {
             return null;
         }
 

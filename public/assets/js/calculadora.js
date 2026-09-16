@@ -31,14 +31,13 @@
         PEN: 'Sol peruano',
         EUR: 'Euro',
         GBP: 'Libra esterlina',
-        JPY: 'Yen japonés',
         BTC: 'Bitcoin',
         ETH: 'Ethereum',
         SOL: 'Solana',
         XRP: 'XRP'
     };
 
-    const fiatAssets = ['USD', 'PEN', 'EUR', 'GBP', 'JPY'];
+    const fiatAssets = ['USD', 'PEN', 'EUR', 'GBP'];
     const cryptoAssets = ['BTC', 'ETH', 'SOL', 'XRP'];
 
     let market = null;
@@ -61,6 +60,16 @@
                 throw new Error(data.message || 'No se pudieron obtener las cotizaciones.');
             }
 
+            const unavailable = Array.isArray(data.unavailable) ? data.unavailable : [];
+            const availableQuotes = Object.values(data.quotes || {})
+                .filter(value => value !== null && value !== undefined).length;
+
+            if (availableQuotes === 0) {
+                throw new Error(
+                    'La fuente de datos no respondió con cotizaciones. Intenta nuevamente más tarde.'
+                );
+            }
+
             market = data;
             updateQuoteCards();
             updateMetadata();
@@ -70,8 +79,8 @@
                 startRefreshCooldown();
             }
 
-            if (Array.isArray(data.unavailable) && data.unavailable.length) {
-                showMessage(`No disponibles: ${data.unavailable.join(', ')}`, 'warning');
+            if (unavailable.length && availableQuotes > 0) {
+                showMessage(`Cotizaciones no disponibles: ${unavailable.join(', ')}`, 'warning');
             }
         } catch (error) {
             showMessage(error.message || 'Error conectando con la API.', 'error');
@@ -98,12 +107,12 @@
     function startRefreshCooldown() {
         const cooldownUntil = Date.now() + manualRefreshCooldownMs;
         localStorage.setItem(refreshCooldownKey, String(cooldownUntil));
-        updateRefreshCooldown();
 
         if (refreshCooldownTimer) {
             clearInterval(refreshCooldownTimer);
         }
 
+        updateRefreshCooldown();
         refreshCooldownTimer = setInterval(updateRefreshCooldown, 1000);
     }
 
@@ -128,6 +137,10 @@
         refreshButton.disabled = true;
         refreshButton.title = 'Debes esperar antes de actualizar nuevamente';
         refreshCountdown.textContent = `Podrás actualizar nuevamente en ${minutes}:${seconds}`;
+
+        if (!refreshCooldownTimer) {
+            refreshCooldownTimer = setInterval(updateRefreshCooldown, 1000);
+        }
     }
 
     function updateMetadata() {
@@ -142,8 +155,6 @@
         setQuote('quote-USD-PEN', market.quotes['USD/PEN'], 5);
         setQuote('quote-EUR-USD', market.quotes['EUR/USD'], 5);
         setQuote('quote-GBP-USD', market.quotes['GBP/USD'], 5);
-        setQuote('quote-USD-JPY', market.quotes['USD/JPY'], 3);
-
         setCryptoQuote('quote-BTC-USD', market.quotes['BTC/USD']);
         setCryptoQuote('quote-ETH-USD', market.quotes['ETH/USD']);
         setCryptoQuote('quote-SOL-USD', market.quotes['SOL/USD']);
@@ -272,7 +283,7 @@
         }
 
         return Number(value).toLocaleString('es-PE', {
-            maximumFractionDigits: asset === 'JPY' ? 2 : 4
+            maximumFractionDigits: 4
         });
     }
 
@@ -304,6 +315,10 @@
 
         loadMarket(true);
     });
+
+    document.addEventListener('visibilitychange', updateRefreshCooldown);
+    window.addEventListener('focus', updateRefreshCooldown);
+    window.addEventListener('pageshow', updateRefreshCooldown);
 
     updateRefreshCooldown();
     loadMarket();

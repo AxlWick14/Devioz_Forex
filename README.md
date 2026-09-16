@@ -18,7 +18,6 @@ Forex:
 - USD/PEN
 - EUR/USD
 - GBP/USD
-- USD/JPY
 
 Crypto:
 - BTC/USD
