@@ -16,6 +16,8 @@ class Cotizacion
 
     public function obtenerMercado(bool $forceRefresh = false): array
     {
+        $lastKnownData = $this->leerCache(true);
+
         if (!$forceRefresh) {
             $cached = $this->leerCache();
             if ($cached !== null) {
@@ -63,6 +65,7 @@ class Cotizacion
         $data = [
             'error' => false,
             'updatedAt' => $timestamps ? max($timestamps) : time(),
+            'fetchedAt' => time(),
             'source' => 'Twelve Data',
             'cached' => false,
             'quotes' => $quotes,
@@ -70,6 +73,17 @@ class Cotizacion
             'usdValue' => $usdValue,
             'unavailable' => $unavailable,
         ];
+
+        if (count(array_filter($quotes, fn($v) => $v !== null)) === 0) {
+            if ($lastKnownData !== null) {
+                $lastKnownData['cached'] = true;
+                $lastKnownData['stale'] = true;
+                $lastKnownData['message'] = 'No se pudo actualizar la fuente. Se muestran las últimas cotizaciones disponibles.';
+                return $lastKnownData;
+            }
+
+            throw new RuntimeException('La fuente de datos no devolvió cotizaciones. Intenta nuevamente más tarde.');
+        }
 
         if (count(array_filter($quotes, fn($v) => $v !== null)) > 0) {
             $this->guardarCache($data);
@@ -179,11 +193,14 @@ class Cotizacion
         return __DIR__ . '/../../storage/cache/market.json';
     }
 
-    private function leerCache(): ?array
+    private function leerCache(bool $ignoreExpiration = false): ?array
     {
         $path = $this->cachePath();
 
-        if (!file_exists($path) || (time() - filemtime($path)) >= MARKET_CACHE_SECONDS) {
+        if (
+            !file_exists($path)
+            || (!$ignoreExpiration && (time() - filemtime($path)) >= MARKET_CACHE_SECONDS)
+        ) {
             return null;
         }
 
@@ -196,6 +213,10 @@ class Cotizacion
             || array_key_exists('JPY', $data['usdValue'])
         ) {
             return null;
+        }
+
+        if (!isset($data['fetchedAt'])) {
+            $data['fetchedAt'] = filemtime($path);
         }
 
         return $data;

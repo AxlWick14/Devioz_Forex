@@ -5,10 +5,16 @@
     const sourceElement = document.getElementById('traderSource');
     const updatedAtElement = document.getElementById('traderUpdatedAt');
     const refreshButton = document.getElementById('traderRefresh');
+    const refreshCountdown = document.getElementById('traderRefreshCountdown');
     const messageElement = document.getElementById('traderMessage');
     const forexCards = document.getElementById('forexCards');
     const cryptoCards = document.getElementById('cryptoCards');
     const tableBody = document.getElementById('marketTableBody');
+    const refreshCooldownKey = 'forex-market-refresh-until';
+    const marketUpdatedKey = 'forex-market-updated-at';
+    const marketDataKey = 'forex-market-data';
+    const manualRefreshCooldownMs = 300000;
+    let refreshCooldownTimer = null;
 
     const forexSymbols = ['USD/PEN', 'EUR/USD', 'GBP/USD', 'EUR/GBP'];
     const cryptoSymbols = ['BTC/USD', 'ETH/USD', 'SOL/USD', 'XRP/USD'];
@@ -25,12 +31,14 @@
 
     let market = null;
 
-    async function loadMarket(forceRefresh = false) {
+    async function loadMarket(forceRefresh = false, broadcastUpdate = false) {
         setLoading(true);
         hideMessage();
 
         try {
-            const requestUrl = forceRefresh ? `${config.apiUrl}?refresh=1` : config.apiUrl;
+            const requestUrl = forceRefresh
+                ? `${config.apiUrl}?refresh=1&t=${Date.now()}`
+                : config.apiUrl;
             const response = await fetch(requestUrl, {
                 headers: { Accept: 'application/json' },
                 cache: 'no-store'
@@ -41,8 +49,29 @@
                 throw new Error(data.message || 'No se pudieron obtener los datos del mercado.');
             }
 
+            const availableQuotes = Object.values(data.quotes || {})
+                .filter(value => value !== null && value !== undefined).length;
+
+            if (availableQuotes === 0) {
+                throw new Error(
+                    'La fuente no devolvió cotizaciones. Intenta nuevamente más tarde.'
+                );
+            }
+
             market = data;
             renderMarket();
+
+            if (forceRefresh && broadcastUpdate) {
+                startRefreshCooldown();
+                showMessage(
+                    data.stale
+                        ? data.message
+                        : 'Cotizaciones actualizadas correctamente.',
+                    data.stale ? 'warning' : 'success'
+                );
+                localStorage.setItem(marketDataKey, JSON.stringify(data));
+                localStorage.setItem(marketUpdatedKey, String(Date.now()));
+            }
         } catch (error) {
             showMessage(error.message || 'Error conectando con la API.', 'error');
         } finally {
@@ -52,7 +81,7 @@
 
     function renderMarket() {
         sourceElement.textContent = market.source || '-';
-        const timestamp = Number(market.updatedAt);
+        const timestamp = Number(market.fetchedAt || market.updatedAt);
         updatedAtElement.textContent = Number.isFinite(timestamp)
             ? new Date(timestamp * 1000).toLocaleString('es-PE')
             : '-';
@@ -162,8 +191,53 @@
     }
 
     function setLoading(loading) {
-        refreshButton.disabled = loading;
-        refreshButton.textContent = loading ? 'Actualizando...' : 'Actualizar datos';
+        refreshButton.disabled = loading || isRefreshOnCooldown();
+        refreshButton.textContent = loading ? 'Actualizando...' : 'Actualizar';
+    }
+
+    function isRefreshOnCooldown() {
+        return getRefreshCooldownUntil() > Date.now();
+    }
+
+    function getRefreshCooldownUntil() {
+        const cooldownUntil = Number(localStorage.getItem(refreshCooldownKey));
+        return Number.isFinite(cooldownUntil) ? cooldownUntil : 0;
+    }
+
+    function startRefreshCooldown() {
+        localStorage.setItem(
+            refreshCooldownKey,
+            String(Date.now() + manualRefreshCooldownMs)
+        );
+
+        if (refreshCooldownTimer) clearInterval(refreshCooldownTimer);
+        updateRefreshCooldown();
+        refreshCooldownTimer = setInterval(updateRefreshCooldown, 1000);
+    }
+
+    function updateRefreshCooldown() {
+        const remainingMs = getRefreshCooldownUntil() - Date.now();
+
+        if (remainingMs <= 0) {
+            localStorage.removeItem(refreshCooldownKey);
+            if (refreshCooldownTimer) clearInterval(refreshCooldownTimer);
+            refreshCooldownTimer = null;
+            refreshButton.disabled = false;
+            refreshButton.title = 'Actualizar cotizaciones';
+            refreshCountdown.textContent = '';
+            return;
+        }
+
+        const remainingSeconds = Math.ceil(remainingMs / 1000);
+        const minutes = Math.floor(remainingSeconds / 60);
+        const seconds = String(remainingSeconds % 60).padStart(2, '0');
+        refreshButton.disabled = true;
+        refreshButton.title = 'Debes esperar antes de actualizar nuevamente';
+        refreshCountdown.textContent = `Podrás actualizar nuevamente en ${minutes}:${seconds}`;
+
+        if (!refreshCooldownTimer) {
+            refreshCooldownTimer = setInterval(updateRefreshCooldown, 1000);
+        }
     }
 
     function showMessage(text, type) {
@@ -178,6 +252,35 @@
         messageElement.textContent = '';
     }
 
-    refreshButton.addEventListener('click', () => loadMarket(true));
+    refreshButton.addEventListener('click', () => {
+        if (isRefreshOnCooldown()) {
+            updateRefreshCooldown();
+            return;
+        }
+        loadMarket(true, true);
+    });
+
+    window.addEventListener('storage', event => {
+        if (event.key === refreshCooldownKey || event.key === marketUpdatedKey) {
+            updateRefreshCooldown();
+        }
+
+        if (event.key === marketDataKey && event.newValue) {
+            try {
+                const sharedMarket = JSON.parse(event.newValue);
+                if (Object.values(sharedMarket.quotes || {}).some(value => value !== null)) {
+                    market = sharedMarket;
+                    renderMarket();
+                }
+            } catch (error) {
+                showMessage('No se pudo sincronizar la cotización compartida.', 'warning');
+            }
+        }
+    });
+
+    document.addEventListener('visibilitychange', updateRefreshCooldown);
+    window.addEventListener('focus', updateRefreshCooldown);
+    window.addEventListener('pageshow', updateRefreshCooldown);
+    updateRefreshCooldown();
     loadMarket();
 })();

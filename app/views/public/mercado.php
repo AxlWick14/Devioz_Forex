@@ -18,7 +18,10 @@ require __DIR__ . '/../layouts/navbar.php';
                 <strong>Resumen del mercado</strong>
                 <small>Fuente: <span id="traderSource">-</span> · Actualizado: <span id="traderUpdatedAt">-</span></small>
             </div>
-            <button class="btn secondary" id="traderRefresh" type="button">Actualizar datos</button>
+            <div class="refresh-control">
+                <button class="btn secondary" id="traderRefresh" type="button">Actualizar</button>
+                <small class="refresh-countdown" id="traderRefreshCountdown" aria-live="polite"></small>
+            </div>
         </div>
 
         <div class="api-message" id="traderMessage" hidden></div>
@@ -69,6 +72,6 @@ require __DIR__ . '/../layouts/navbar.php';
         apiUrl: <?= json_encode(BASE_URL . 'api/mercado', JSON_UNESCAPED_SLASHES) ?>
     };
 </script>
-<script src="<?= BASE_URL ?>assets/js/mercado.js"></script>
+<script src="<?= BASE_URL ?>assets/js/mercado.js?v=<?= (int) filemtime(__DIR__ . '/../../../public/assets/js/mercado.js') ?>"></script>
 
 <?php require __DIR__ . '/../layouts/footer.php'; ?>

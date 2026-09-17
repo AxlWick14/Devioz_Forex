@@ -8,6 +8,8 @@
         root.dataset.manualRefreshCooldownMs || 300000
     );
     const refreshCooldownKey = 'forex-market-refresh-until';
+    const marketUpdatedKey = 'forex-market-updated-at';
+    const marketDataKey = 'forex-market-data';
 
     const amountInput = document.getElementById('fxAmount');
     const fromSelect = document.getElementById('fxFrom');
@@ -43,12 +45,14 @@
     let market = null;
     let refreshCooldownTimer = null;
 
-    async function loadMarket(forceRefresh = false) {
+    async function loadMarket(forceRefresh = false, broadcastUpdate = false) {
         setLoading(true);
         hideMessage();
 
         try {
-            const requestUrl = forceRefresh ? `${apiUrl}?refresh=1` : apiUrl;
+            const requestUrl = forceRefresh
+                ? `${apiUrl}?refresh=1&t=${Date.now()}`
+                : apiUrl;
             const response = await fetch(requestUrl, {
                 headers: { 'Accept': 'application/json' },
                 cache: 'no-store'
@@ -77,6 +81,11 @@
 
             if (forceRefresh) {
                 startRefreshCooldown();
+                showMessage('Cotizaciones actualizadas correctamente.', 'success');
+                if (broadcastUpdate) {
+                    localStorage.setItem(marketDataKey, JSON.stringify(data));
+                    localStorage.setItem(marketUpdatedKey, String(Date.now()));
+                }
             }
 
             if (unavailable.length && availableQuotes > 0) {
@@ -145,7 +154,7 @@
 
     function updateMetadata() {
         sourceElement.textContent = market.source || '-';
-        const timestamp = Number(market.updatedAt);
+        const timestamp = Number(market.fetchedAt || market.updatedAt);
         updatedAtElement.textContent = Number.isFinite(timestamp)
             ? new Date(timestamp * 1000).toLocaleString('es-PE')
             : '-';
@@ -311,9 +320,32 @@
     });
 
     refreshButton.addEventListener('click', () => {
-        if (isRefreshOnCooldown()) return;
+        if (isRefreshOnCooldown()) {
+            updateRefreshCooldown();
+            return;
+        }
 
-        loadMarket(true);
+        loadMarket(true, true);
+    });
+
+    window.addEventListener('storage', event => {
+        if (event.key === refreshCooldownKey || event.key === marketUpdatedKey) {
+            updateRefreshCooldown();
+        }
+
+        if (event.key === marketDataKey && event.newValue) {
+            try {
+                const sharedMarket = JSON.parse(event.newValue);
+                if (Object.values(sharedMarket.quotes || {}).some(value => value !== null)) {
+                    market = sharedMarket;
+                    updateQuoteCards();
+                    updateMetadata();
+                    calculateAll();
+                }
+            } catch (error) {
+                showMessage('No se pudo sincronizar la cotización compartida.', 'warning');
+            }
+        }
     });
 
     document.addEventListener('visibilitychange', updateRefreshCooldown);
