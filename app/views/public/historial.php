@@ -19,7 +19,7 @@ require __DIR__ . '/../layouts/navbar.php';
             <div class="trader-toolbar history-toolbar">
                 <div class="toolbar-meta">
                     <strong id="historialParTitle">EUR/USD</strong>
-                    <small id="historialMeta">Últimos 30 días</small>
+   p|                 <small id="historialMeta">Últimos 30 días</small>
                 </div>
 
                 <div class="toolbar-controls">
@@ -44,10 +44,6 @@ require __DIR__ . '/../layouts/navbar.php';
                         <input type="date" id="historialHasta" value="<?= date('Y-m-d') ?>">
                     </div>
                     <button id="historialBuscar" class="btn primary" type="button">Buscar</button>
-                    <a class="btn secondary" href="<?= BASE_URL ?>historial-exportar?par=USD%2FPEN&hasta=<?= date('Y-m-d') ?>">CSV Dólar</a>
-                    <a class="btn secondary" href="<?= BASE_URL ?>historial-exportar?par=EUR%2FUSD&hasta=<?= date('Y-m-d') ?>">CSV Euro</a>
-                    <a class="btn secondary" href="<?= BASE_URL ?>historial-exportar?par=BTC%2FUSD&hasta=<?= date('Y-m-d') ?>">CSV Bitcoin</a>
-                    <a class="btn secondary" href="<?= BASE_URL ?>historial-exportar?par=ETH%2FUSD&hasta=<?= date('Y-m-d') ?>">CSV Ethereum</a>
                 </div>
             </div>
         </div>
@@ -108,15 +104,15 @@ require __DIR__ . '/../layouts/navbar.php';
     </section>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js?v=4.4.3" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr?v=4.1.4" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js?v=4.1.4" defer></script>
 <script>
     const historialConfig = {
         apiUrl: '<?= BASE_URL ?>historial-data'
     };
 </script>
-<script src="<?= BASE_URL ?>assets/js/historial.js"></script>
+<script src="<?= BASE_URL ?>assets/js/historial.js?v=<?= (int) filemtime(__DIR__ . '/../../../public/assets/js/historial.js') ?>" defer></script>
 
 <?php require __DIR__ . '/../layouts/footer.php'; ?>
 de 

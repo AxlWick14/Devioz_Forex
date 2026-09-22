@@ -23,18 +23,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function initializeDatePickers() {
         if (typeof flatpickr === 'undefined') return;
 
-        datePickers.forEach((picker) => picker.destroy());
+        datePickers.forEach((picker) => {
+            if (picker && typeof picker.destroy === 'function') {
+                picker.destroy();
+            }
+        });
+
         datePickers = [desdeInput, hastaInput].map((input) => flatpickr(input, {
             dateFormat: 'Y-m-d',
-            altInput: true,
-            altFormat: 'd/m/Y',
+            altInput: false,
             locale: 'es',
             allowInput: false,
-            disable: (date) => {
-                if (!availableDates.size) return false;
-                const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-                return !availableDates.has(localDate.toISOString().slice(0, 10));
-            },
             onChange: () => {
                 if (desdeInput.value && hastaInput.value) cargarHistorial();
             }
@@ -92,23 +91,36 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        if (!chartCanvas || typeof Chart === 'undefined') {
+            return;
+        }
+
         const url = `${historialConfig.apiUrl}?par=${encodeURIComponent(par)}&desde=${encodeURIComponent(desde)}&hasta=${encodeURIComponent(hasta)}`;
 
         try {
             const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
             const data = await response.json();
-            const rows = data.datos || [];
+            if (!data || !Array.isArray(data.datos)) {
+                throw new Error('Respuesta inválida del historial');
+            }
+
+            const rows = data.datos;
             updateAvailableDates(rows);
 
             tableBody.innerHTML = '';
 
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+
             if (!rows.length) {
                 actualizarResumenVacio();
                 tableBody.innerHTML = '<tr><td colspan="6">No hay datos para este rango.</td></tr>';
-                if (chartInstance) {
-                    chartInstance.destroy();
-                    chartInstance = null;
-                }
                 return;
             }
 
@@ -135,10 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const firstValue = Number(rows[0].precio_cierre ?? 0);
             const lastValue = Number(rows[rows.length - 1].precio_cierre ?? 0);
             const trendColor = lastValue >= firstValue ? '#7df0b0' : '#ff9a9f';
-
-            if (chartInstance) {
-                chartInstance.destroy();
-            }
 
             chartInstance = new Chart(chartCanvas, {
                 type: 'line',
