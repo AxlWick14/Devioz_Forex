@@ -14,11 +14,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const historialCambioResumen = document.getElementById('historialCambioResumen');
     const historialRowsLabel = document.getElementById('historialRowsLabel');
     const historialCargarMas = document.getElementById('historialCargarMas');
+
     let chartInstance = null;
     let availableDates = new Set();
     let datePickers = [];
     let allRows = [];
     let visibleRowsCount = 15;
+
     const pairStartDates = {
         'EUR/USD': '2000-01-01',
         'USD/PEN': '2000-01-01',
@@ -48,16 +50,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const par = parSelect.value;
         const startDate = pairStartDates[par] ?? '2000-01-01';
         const startDateValue = new Date(`${startDate}T12:00:00`);
-
         const hasData = availableDates.size > 0;
-        const enabledDates = hasData ? [...availableDates].map((date) => new Date(`${date}T12:00:00`)) : [];
 
         datePickers = [desdeInput, hastaInput].map((input) => flatpickr(input, {
             dateFormat: 'Y-m-d',
             altInput: false,
             locale: 'es',
             allowInput: false,
-            enable: enabledDates.length ? enabledDates : undefined,
             disable: [function(date) {
                 const isoDate = formatIsoDate(date);
                 return date < startDateValue || (hasData && !availableDates.has(isoDate));
@@ -76,7 +75,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             },
             onChange: () => {
-                if (desdeInput.value && hastaInput.value) cargarHistorial();
+                if (desdeInput.value && hastaInput.value) {
+                    cargarHistorial();
+                }
             }
         }));
     }
@@ -89,8 +90,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (availableDates.size) {
             const dates = [...availableDates].sort();
             const minSelectable = dates.find((date) => date >= startDate) ?? startDate;
-            if (!availableDates.has(desdeInput.value) || desdeInput.value < startDate) desdeInput.value = minSelectable;
-            if (!availableDates.has(hastaInput.value) || hastaInput.value < startDate) hastaInput.value = dates[dates.length - 1];
+            if (!availableDates.has(desdeInput.value) || desdeInput.value < startDate) {
+                desdeInput.value = minSelectable;
+            }
+            if (!availableDates.has(hastaInput.value) || hastaInput.value < startDate) {
+                hastaInput.value = dates[dates.length - 1];
+            }
         }
 
         if (!availableDates.size && desdeInput.value < startDate) {
@@ -129,7 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
         historialPrecioFinal.textContent = formatValue(lastClose);
         historialCambioResumen.textContent = `${variationPct >= 0 ? '+' : ''}${variationPct.toFixed(2)}%`;
         historialRowsLabel.textContent = `${rows.length} registros`;
-
         historialTrendBadge.textContent = `${variationPct >= 0 ? '+' : ''}${variationPct.toFixed(2)}%`;
         historialTrendBadge.className = `trend-badge ${trend}`;
     }
@@ -139,7 +143,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!allRows.length) {
             tableBody.innerHTML = '<tr><td colspan="6">No hay datos para este rango.</td></tr>';
-            if (historialCargarMas) historialCargarMas.style.display = 'none';
+            if (historialCargarMas) {
+                historialCargarMas.style.display = 'none';
+            }
             return;
         }
 
@@ -284,9 +290,11 @@ document.addEventListener('DOMContentLoaded', () => {
     parSelect.addEventListener('change', cargarHistorial);
     desdeInput.addEventListener('change', cargarHistorial);
     hastaInput.addEventListener('change', cargarHistorial);
+
     if (historialCargarMas) {
         historialCargarMas.addEventListener('click', cargarMasRegistros);
     }
+
     initializeDatePickers();
     cargarHistorial();
 });

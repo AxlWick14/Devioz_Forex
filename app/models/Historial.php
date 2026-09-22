@@ -64,16 +64,6 @@ class Historial
         }
         $limit = max(1, min(10000, $limit));
 
-        $datosApi = $this->obtenerHistoricoDesdeApi($par, $desde, $hasta);
-        if ($datosApi !== []) {
-            return [
-                'par' => $par,
-                'desde' => $desde,
-                'hasta' => $hasta,
-                'datos' => $datosApi,
-            ];
-        }
-
         $sql = "
             SELECT par, fecha, precio_apertura, precio_maximo, precio_minimo, precio_cierre, cambio_porcentual, fuente
             FROM historico_cotizaciones
@@ -92,8 +82,13 @@ class Historial
 
         $datos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        if ($datos === []) {
-            $datos = $this->generarDatosDemo($par, $desde, $hasta);
+        if (count($datos) < 2) {
+            $datosApi = $this->obtenerHistoricoDesdeApi($par, $desde, $hasta);
+            if ($datosApi !== []) {
+                $datos = $datosApi;
+            } else {
+                $datos = $this->generarDatosDemo($par, $desde, $hasta);
+            }
         }
 
         return [
