@@ -6,6 +6,29 @@ require __DIR__ . '/../layouts/navbar.php';
 <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/mercado.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+<style>
+    .flatpickr-day.date-has-data {
+        background: rgba(63, 138, 255, 0.22) !important;
+        border-color: rgba(63, 138, 255, 0.75) !important;
+        color: #7db8ff !important;
+    }
+
+    .flatpickr-day.date-no-data {
+        background: rgba(255, 82, 82, 0.18) !important;
+        border-color: rgba(255, 82, 82, 0.7) !important;
+        color: #ff8d8d !important;
+    }
+
+    .flatpickr-day.date-no-data:hover,
+    .flatpickr-day.date-no-data:focus {
+        background: rgba(255, 82, 82, 0.30) !important;
+    }
+
+    .flatpickr-day.date-has-data:hover,
+    .flatpickr-day.date-has-data:focus {
+        background: rgba(63, 138, 255, 0.35) !important;
+    }
+</style>
 
 <main class="page-shell">
     <section class="container">
@@ -26,18 +49,15 @@ require __DIR__ . '/../layouts/navbar.php';
                     <div class="field compact">
                         <label for="historialPar">Par</label>
                         <select id="historialPar">
+                            <option value="USD/PEN" selected>USD/PEN</option>
                             <option value="EUR/USD">EUR/USD</option>
-                            <option value="GBP/USD">GBP/USD</option>
-                            <option value="USD/PEN">USD/PEN</option>
                             <option value="BTC/USD">BTC/USD</option>
                             <option value="ETH/USD">ETH/USD</option>
-                            <option value="SOL/USD">SOL/USD</option>
-                            <option value="XRP/USD">XRP/USD</option>
                         </select>
                     </div>
                     <div class="field compact">
                         <label for="historialDesde">Desde</label>
-                        <input type="date" id="historialDesde" value="2000-01-01">
+                        <input type="date" id="historialDesde" value="<?= date('Y-m-d', strtotime('-1 month')) ?>">
                     </div>
                     <div class="field compact">
                         <label for="historialHasta">Hasta</label>
@@ -99,6 +119,9 @@ require __DIR__ . '/../layouts/navbar.php';
                         </tr>
                     </tbody>
                 </table>
+                <div class="mt-3 text-center">
+                    <button id="historialCargarMas" type="button" class="btn secondary" style="display:none;">Cargar más</button>
+                </div>
             </div>
         </div>
     </section>

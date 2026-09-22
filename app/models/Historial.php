@@ -7,22 +7,16 @@ class Historial
 
     private array $symbols = [
         'EUR/USD',
-        'GBP/USD',
         'USD/PEN',
         'BTC/USD',
         'ETH/USD',
-        'SOL/USD',
-        'XRP/USD',
     ];
 
     private array $minimumDates = [
         'EUR/USD' => '2000-01-01',
-        'GBP/USD' => '2000-01-01',
         'USD/PEN' => '2000-01-01',
         'BTC/USD' => '2012-01-01',
-        'XRP/USD' => '2013-01-01',
         'ETH/USD' => '2015-01-01',
-        'SOL/USD' => '2020-01-01',
     ];
 
     public function __construct()
@@ -59,9 +53,9 @@ class Historial
         return $datos;
     }
 
-    public function obtenerHistorico(string $par = 'EUR/USD', ?string $desde = null, ?string $hasta = null, int $limit = 60): array
+    public function obtenerHistorico(string $par = 'USD/PEN', ?string $desde = null, ?string $hasta = null, int $limit = 60): array
     {
-        $par = in_array($par, $this->symbols, true) ? $par : 'EUR/USD';
+        $par = in_array($par, $this->symbols, true) ? $par : 'USD/PEN';
         $desde = $desde ?: ($this->minimumDates[$par] ?? '2000-01-01');
         $hasta = $hasta ?: date('Y-m-d');
         $minimumDate = $this->minimumDates[$par] ?? '2000-01-01';

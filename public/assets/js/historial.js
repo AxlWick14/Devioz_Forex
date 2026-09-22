@@ -13,12 +13,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const historialPrecioFinal = document.getElementById('historialPrecioFinal');
     const historialCambioResumen = document.getElementById('historialCambioResumen');
     const historialRowsLabel = document.getElementById('historialRowsLabel');
+    const historialCargarMas = document.getElementById('historialCargarMas');
     let chartInstance = null;
     let availableDates = new Set();
     let datePickers = [];
+    let allRows = [];
+    let visibleRowsCount = 15;
+    const pairStartDates = {
+        'EUR/USD': '2000-01-01',
+        'USD/PEN': '2000-01-01',
+        'BTC/USD': '2012-01-01',
+        'ETH/USD': '2015-01-01'
+    };
 
     const formatValue = (value, digits = 5) => Number(value ?? 0).toFixed(digits);
     const formatPercent = (value) => `${Number(value ?? 0).toFixed(2)}%`;
+
+    function formatIsoDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
 
     function initializeDatePickers() {
         if (typeof flatpickr === 'undefined') return;
@@ -29,11 +45,36 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        const par = parSelect.value;
+        const startDate = pairStartDates[par] ?? '2000-01-01';
+        const startDateValue = new Date(`${startDate}T12:00:00`);
+
+        const hasData = availableDates.size > 0;
+        const enabledDates = hasData ? [...availableDates].map((date) => new Date(`${date}T12:00:00`)) : [];
+
         datePickers = [desdeInput, hastaInput].map((input) => flatpickr(input, {
             dateFormat: 'Y-m-d',
             altInput: false,
             locale: 'es',
             allowInput: false,
+            enable: enabledDates.length ? enabledDates : undefined,
+            disable: [function(date) {
+                const isoDate = formatIsoDate(date);
+                return date < startDateValue || (hasData && !availableDates.has(isoDate));
+            }],
+            onDayCreate: function(dObj, dStr, fp, dayElem) {
+                const isoDate = formatIsoDate(dayElem.dateObj);
+                if (dayElem.dateObj < startDateValue) {
+                    dayElem.classList.add('date-no-data');
+                    return;
+                }
+
+                if (availableDates.has(isoDate)) {
+                    dayElem.classList.add('date-has-data');
+                } else {
+                    dayElem.classList.add('date-no-data');
+                }
+            },
             onChange: () => {
                 if (desdeInput.value && hastaInput.value) cargarHistorial();
             }
@@ -42,11 +83,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateAvailableDates(rows) {
         availableDates = new Set(rows.map((row) => row.fecha));
+        const par = parSelect.value;
+        const startDate = pairStartDates[par] ?? '2000-01-01';
+
         if (availableDates.size) {
             const dates = [...availableDates].sort();
-            if (!availableDates.has(desdeInput.value)) desdeInput.value = dates[0];
-            if (!availableDates.has(hastaInput.value)) hastaInput.value = dates[dates.length - 1];
+            const minSelectable = dates.find((date) => date >= startDate) ?? startDate;
+            if (!availableDates.has(desdeInput.value) || desdeInput.value < startDate) desdeInput.value = minSelectable;
+            if (!availableDates.has(hastaInput.value) || hastaInput.value < startDate) hastaInput.value = dates[dates.length - 1];
         }
+
+        if (!availableDates.size && desdeInput.value < startDate) {
+            desdeInput.value = startDate;
+        }
+
         initializeDatePickers();
     }
 
@@ -60,6 +110,9 @@ document.addEventListener('DOMContentLoaded', () => {
         historialPrecioFinal.textContent = '--';
         historialCambioResumen.textContent = '--';
         historialRowsLabel.textContent = '0 registros';
+        if (historialCargarMas) {
+            historialCargarMas.style.display = 'none';
+        }
     }
 
     function actualizarResumen(rows, par) {
@@ -81,6 +134,43 @@ document.addEventListener('DOMContentLoaded', () => {
         historialTrendBadge.className = `trend-badge ${trend}`;
     }
 
+    function renderHistorialRows() {
+        tableBody.innerHTML = '';
+
+        if (!allRows.length) {
+            tableBody.innerHTML = '<tr><td colspan="6">No hay datos para este rango.</td></tr>';
+            if (historialCargarMas) historialCargarMas.style.display = 'none';
+            return;
+        }
+
+        const rowsToShow = allRows.slice(-visibleRowsCount);
+        rowsToShow.forEach((row) => {
+            const tr = document.createElement('tr');
+            const cambio = Number(row.cambio_porcentual ?? 0);
+            const cambioClass = cambio >= 0 ? 'text-up' : 'text-down';
+
+            tr.innerHTML = `
+                <td><strong>${row.fecha}</strong></td>
+                <td>${formatValue(row.precio_apertura)}</td>
+                <td>${formatValue(row.precio_maximo)}</td>
+                <td>${formatValue(row.precio_minimo)}</td>
+                <td>${formatValue(row.precio_cierre)}</td>
+                <td class="${cambioClass}">${formatPercent(row.cambio_porcentual)}</td>
+            `;
+            tableBody.appendChild(tr);
+        });
+
+        if (historialCargarMas) {
+            historialCargarMas.style.display = visibleRowsCount >= allRows.length ? 'none' : 'inline-block';
+        }
+    }
+
+    function cargarMasRegistros() {
+        if (!allRows.length) return;
+        visibleRowsCount = Math.min(visibleRowsCount + 15, allRows.length);
+        renderHistorialRows();
+    }
+
     async function cargarHistorial() {
         const par = parSelect.value;
         const desde = desdeInput.value;
@@ -95,6 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        visibleRowsCount = 15;
         const url = `${historialConfig.apiUrl}?par=${encodeURIComponent(par)}&desde=${encodeURIComponent(desde)}&hasta=${encodeURIComponent(hasta)}`;
 
         try {
@@ -108,44 +199,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('Respuesta inválida del historial');
             }
 
-            const rows = data.datos;
-            updateAvailableDates(rows);
-
-            tableBody.innerHTML = '';
+            allRows = data.datos;
+            updateAvailableDates(allRows);
 
             if (chartInstance) {
                 chartInstance.destroy();
                 chartInstance = null;
             }
 
-            if (!rows.length) {
+            if (!allRows.length) {
                 actualizarResumenVacio();
-                tableBody.innerHTML = '<tr><td colspan="6">No hay datos para este rango.</td></tr>';
+                renderHistorialRows();
                 return;
             }
 
-            rows.forEach((row) => {
-                const tr = document.createElement('tr');
-                const cambio = Number(row.cambio_porcentual ?? 0);
-                const cambioClass = cambio >= 0 ? 'text-up' : 'text-down';
+            renderHistorialRows();
+            actualizarResumen(allRows, par);
 
-                tr.innerHTML = `
-                    <td><strong>${row.fecha}</strong></td>
-                    <td>${formatValue(row.precio_apertura)}</td>
-                    <td>${formatValue(row.precio_maximo)}</td>
-                    <td>${formatValue(row.precio_minimo)}</td>
-                    <td>${formatValue(row.precio_cierre)}</td>
-                    <td class="${cambioClass}">${formatPercent(row.cambio_porcentual)}</td>
-                `;
-                tableBody.appendChild(tr);
-            });
-
-            actualizarResumen(rows, par);
-
-            const labels = rows.map((row) => row.fecha);
-            const values = rows.map((row) => Number(row.precio_cierre ?? 0));
-            const firstValue = Number(rows[0].precio_cierre ?? 0);
-            const lastValue = Number(rows[rows.length - 1].precio_cierre ?? 0);
+            const labels = allRows.map((row) => row.fecha);
+            const values = allRows.map((row) => Number(row.precio_cierre ?? 0));
+            const firstValue = Number(allRows[0].precio_cierre ?? 0);
+            const lastValue = Number(allRows[allRows.length - 1].precio_cierre ?? 0);
             const trendColor = lastValue >= firstValue ? '#7df0b0' : '#ff9a9f';
 
             chartInstance = new Chart(chartCanvas, {
@@ -200,7 +274,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } catch (error) {
             actualizarResumenVacio();
-            tableBody.innerHTML = '<tr><td colspan="6">Error al cargar el historial.</td></tr>';
+            allRows = [];
+            renderHistorialRows();
             console.error(error);
         }
     }
@@ -209,6 +284,9 @@ document.addEventListener('DOMContentLoaded', () => {
     parSelect.addEventListener('change', cargarHistorial);
     desdeInput.addEventListener('change', cargarHistorial);
     hastaInput.addEventListener('change', cargarHistorial);
+    if (historialCargarMas) {
+        historialCargarMas.addEventListener('click', cargarMasRegistros);
+    }
     initializeDatePickers();
     cargarHistorial();
 });

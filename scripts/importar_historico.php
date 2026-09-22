@@ -19,7 +19,10 @@ if (!is_file($filePath) || !is_readable($filePath)) {
 }
 
 $handle = fopen($filePath, 'rb');
-$headers = fgetcsv($handle);
+$firstLine = fgets($handle);
+rewind($handle);
+$delimiter = str_contains((string) $firstLine, ';') ? ';' : ',';
+$headers = fgetcsv($handle, 0, $delimiter);
 
 if ($headers === false) {
     fclose($handle);
@@ -29,11 +32,11 @@ if ($headers === false) {
 
 $headers = array_map(static fn($header): string => strtolower(trim((string) $header)), $headers);
 $aliases = [
-    'datetime' => ['datetime', 'date', 'timestamp', 'time'],
-    'open' => ['open', 'price_open', 'precio_apertura'],
-    'high' => ['high', 'price_high', 'precio_maximo'],
-    'low' => ['low', 'price_low', 'precio_minimo'],
-    'close' => ['close', 'price_close', 'precio_cierre'],
+    'datetime' => ['datetime', 'date', 'timestamp', 'time', 'fecha'],
+    'open' => ['open', 'price_open', 'precio_apertura', 'precio_apertura'],
+    'high' => ['high', 'price_high', 'precio_maximo', 'precio_maximo'],
+    'low' => ['low', 'price_low', 'precio_minimo', 'precio_minimo'],
+    'close' => ['close', 'price_close', 'precio_cierre', 'precio_cierre'],
     'volume' => ['volume', 'volumen'],
 ];
 
@@ -92,7 +95,7 @@ $skipped = 0;
 $connection->beginTransaction();
 
 try {
-    while (($row = fgetcsv($handle)) !== false) {
+    while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
         $dateValue = trim((string) ($row[$indexes['datetime']] ?? ''));
         $dateTime = date_create($dateValue);
         $open = $row[$indexes['open']] ?? null;

@@ -6,7 +6,7 @@ class HistorialController
     public function index(): void
     {
         $historico = new Historial();
-        $par = $_GET['par'] ?? 'EUR/USD';
+        $par = $_GET['par'] ?? 'USD/PEN';
         $desde = $_GET['desde'] ?? null;
         $hasta = $_GET['hasta'] ?? date('Y-m-d');
 
@@ -22,7 +22,7 @@ class HistorialController
         $hasta = $_GET['hasta'] ?? date('Y-m-d');
         $historico = new Historial();
 
-        if ($par !== null && in_array($par, ['USD/PEN', 'EUR/USD', 'BTC/USD', 'ETH/USD'], true)) {
+        if ($par !== null && in_array($par, ['EUR/USD', 'USD/PEN', 'BTC/USD', 'ETH/USD'], true)) {
             $datos = $historico->obtenerHistorico($par, null, $hasta, 10000)['datos'];
             $fileName = 'historico_' . str_replace('/', '_', $par) . '_hasta_' . $hasta . '.csv';
         } else {
@@ -44,7 +44,6 @@ class HistorialController
             'precio_minimo',
             'precio_cierre',
             'cambio_porcentual',
-            'fuente',
         ], ';');
 
         foreach ($datos as $dato) {
@@ -56,7 +55,6 @@ class HistorialController
                 $dato['precio_minimo'],
                 $dato['precio_cierre'],
                 $dato['cambio_porcentual'],
-                $dato['fuente'],
             ], ';');
         }
 
