@@ -79,6 +79,25 @@ La visualización de cotizaciones no necesita MySQL todavía.
 
 El archivo `database/forex_db.sql` deja preparadas las tablas para la siguiente etapa: guardar históricos y desarrollar el CRUD.
 
+## 6. Cargar históricos para Machine Learning
+
+Ejecuta `database/forex_db.sql` en MySQL para crear la tabla `velas_historicas`. Después descarga un CSV diario y utiliza este formato mínimo:
+
+```csv
+datetime,open,high,low,close,volume
+2020-01-02,1.1200,1.1250,1.1180,1.1230,0
+```
+
+Desde PowerShell, importa el archivo con el PHP de XAMPP:
+
+```powershell
+C:\xampp\php\php.exe scripts\importar_historico.php C:\datos\eur_usd.csv EUR/USD Dukascopy 1day
+```
+
+Puedes repetir el comando para cada par. El importador evita duplicados por par, intervalo y fecha. Para criptomonedas usa como fecha inicial la primera vela de mercado disponible; no agregues filas anteriores a su existencia.
+
+La pestaña Historial permite descargar archivos CSV separados para dólar (`USD/PEN`), euro (`EUR/USD`), Bitcoin (`BTC/USD`) y Ethereum (`ETH/USD`). El separador es `;`, compatible con Excel en configuración regional española, y las filas quedan ordenadas por fecha ascendente.
+
 ## Nota sobre “tiempo real”
 
 La versión incluida usa REST y actualización automática. Para streaming tick a tick se necesitaría pasar a WebSocket.

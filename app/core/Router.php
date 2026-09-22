@@ -11,6 +11,8 @@ class Router
             'mercado' => ['HomeController', 'mercado'],
             'calculadora' => ['HomeController', 'calculadora'],
             'historial' => ['HomeController', 'historial'],
+            'historial-data' => ['HistorialController', 'index'],
+            'historial-exportar' => ['HistorialController', 'exportar'],
             'dashboard' => ['HomeController', 'dashboard'],
             'etl' => ['HomeController', 'etl'],
             'pronosticos' => ['HomeController', 'pronosticos'],
