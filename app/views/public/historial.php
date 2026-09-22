@@ -64,10 +64,6 @@ require __DIR__ . '/../layouts/navbar.php';
                         <input type="date" id="historialHasta" value="<?= date('Y-m-d') ?>">
                     </div>
                     <button id="historialBuscar" class="btn primary" type="button">Buscar</button>
-                    <a class="btn secondary" href="<?= BASE_URL ?>historial-exportar?par=USD%2FPEN&hasta=<?= date('Y-m-d') ?>">CSV Dólar</a>
-                    <a class="btn secondary" href="<?= BASE_URL ?>historial-exportar?par=EUR%2FUSD&hasta=<?= date('Y-m-d') ?>">CSV Euro</a>
-                    <a class="btn secondary" href="<?= BASE_URL ?>historial-exportar?par=BTC%2FUSD&hasta=<?= date('Y-m-d') ?>">CSV Bitcoin</a>
-                    <a class="btn secondary" href="<?= BASE_URL ?>historial-exportar?par=ETH%2FUSD&hasta=<?= date('Y-m-d') ?>">CSV Ethereum</a>
                 </div>
             </div>
         </div>
