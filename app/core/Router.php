@@ -14,8 +14,8 @@ class Router
             'historial-data' => ['HistorialController', 'index'],
             'historial-exportar' => ['HistorialController', 'exportar'],
             'dashboard' => ['HomeController', 'dashboard'],
-            'etl' => ['HomeController', 'etl'],
             'pronosticos' => ['HomeController', 'pronosticos'],
+            'pronosticos-data' => ['PronosticoController', 'index'],
             'alertas' => ['HomeController', 'alertas'],
             'api/mercado' => ['CotizacionController', 'mercado'],
         ];
