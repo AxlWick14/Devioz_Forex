@@ -21,22 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let allRows = [];
     let visibleRowsCount = 15;
 
-    const pairStartDates = {
-        'EUR/USD': '2000-01-01',
-        'USD/PEN': '2000-01-01',
-        'BTC/USD': '2012-01-01',
-        'ETH/USD': '2015-01-01'
-    };
-
     const formatValue = (value, digits = 5) => Number(value ?? 0).toFixed(digits);
     const formatPercent = (value) => `${Number(value ?? 0).toFixed(2)}%`;
-
-    function formatIsoDate(date) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
 
     function initializeDatePickers() {
         if (typeof flatpickr === 'undefined') return;
@@ -47,33 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        const par = parSelect.value;
-        const startDate = pairStartDates[par] ?? '2000-01-01';
-        const startDateValue = new Date(`${startDate}T12:00:00`);
-        const hasData = availableDates.size > 0;
-
         datePickers = [desdeInput, hastaInput].map((input) => flatpickr(input, {
             dateFormat: 'Y-m-d',
             altInput: false,
             locale: 'es',
             allowInput: false,
-            disable: [function(date) {
-                const isoDate = formatIsoDate(date);
-                return date < startDateValue || (hasData && !availableDates.has(isoDate));
-            }],
-            onDayCreate: function(dObj, dStr, fp, dayElem) {
-                const isoDate = formatIsoDate(dayElem.dateObj);
-                if (dayElem.dateObj < startDateValue) {
-                    dayElem.classList.add('date-no-data');
-                    return;
-                }
-
-                if (availableDates.has(isoDate)) {
-                    dayElem.classList.add('date-has-data');
-                } else {
-                    dayElem.classList.add('date-no-data');
-                }
-            },
             onChange: () => {
                 if (desdeInput.value && hastaInput.value) {
                     cargarHistorial();
@@ -84,22 +48,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateAvailableDates(rows) {
         availableDates = new Set(rows.map((row) => row.fecha));
-        const par = parSelect.value;
-        const startDate = pairStartDates[par] ?? '2000-01-01';
 
         if (availableDates.size) {
             const dates = [...availableDates].sort();
-            const minSelectable = dates.find((date) => date >= startDate) ?? startDate;
-            if (!availableDates.has(desdeInput.value) || desdeInput.value < startDate) {
-                desdeInput.value = minSelectable;
+            if (!availableDates.has(desdeInput.value)) {
+                desdeInput.value = dates[0];
             }
-            if (!availableDates.has(hastaInput.value) || hastaInput.value < startDate) {
+            if (!availableDates.has(hastaInput.value)) {
                 hastaInput.value = dates[dates.length - 1];
             }
-        }
-
-        if (!availableDates.size && desdeInput.value < startDate) {
-            desdeInput.value = startDate;
         }
 
         initializeDatePickers();

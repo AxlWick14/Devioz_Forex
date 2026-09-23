@@ -19,7 +19,6 @@ require __DIR__ . '/../layouts/navbar.php';
         color: #ff8d8d !important;
     }
 
-    .flatpickr-day.date-no-data:hover,
     .flatpickr-day.date-no-data:focus {
         background: rgba(255, 82, 82, 0.30) !important;
     }
@@ -42,7 +41,7 @@ require __DIR__ . '/../layouts/navbar.php';
             <div class="trader-toolbar history-toolbar">
                 <div class="toolbar-meta">
                     <strong id="historialParTitle">EUR/USD</strong>
-                    <small id="historialMeta">Últimos 30 días</small>
+                    <small id="historialMeta">Últimos 14 días</small>
                 </div>
 
                 <div class="toolbar-controls">
@@ -57,7 +56,7 @@ require __DIR__ . '/../layouts/navbar.php';
                     </div>
                     <div class="field compact">
                         <label for="historialDesde">Desde</label>
-                        <input type="date" id="historialDesde" value="<?= date('Y-m-d', strtotime('-1 month')) ?>">
+                        <input type="date" id="historialDesde" value="<?= date('Y-m-d', strtotime('-14 days')) ?>">
                     </div>
                     <div class="field compact">
                         <label for="historialHasta">Hasta</label>

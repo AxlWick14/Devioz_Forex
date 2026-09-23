@@ -108,9 +108,34 @@ try {
             continue;
         }
 
+        $openValue = (float) $open;
+        $highValue = (float) $high;
+        $lowValue = (float) $low;
+        $closeValue = (float) $close;
+
+        if ($openValue <= 0 || $highValue <= 0 || $lowValue <= 0 || $closeValue <= 0) {
+            $skipped++;
+            continue;
+        }
+
+        if ($lowValue > $highValue || $lowValue > $openValue || $lowValue > $closeValue) {
+            $skipped++;
+            continue;
+        }
+
+        if ($highValue < $openValue && $highValue < $closeValue) {
+            $skipped++;
+            continue;
+        }
+
+        if ($par === 'USD/PEN' && ($closeValue < 0.5 || $openValue < 0.5 || $highValue > 20 || $lowValue > 20)) {
+            $skipped++;
+            continue;
+        }
+
         $volume = array_key_exists('volume', $indexes) ? ($row[$indexes['volume']] ?? null) : null;
-        $change = ((float) $open) !== 0.0
-            ? (((float) $close - (float) $open) / (float) $open) * 100
+        $change = $openValue !== 0.0
+            ? (($closeValue - $openValue) / $openValue) * 100
             : null;
         $statement->execute([
             ':par' => $par,
@@ -126,10 +151,10 @@ try {
         $historyStatement->execute([
             ':par' => $par,
             ':fecha' => $dateTime->format('Y-m-d'),
-            ':open' => (float) $open,
-            ':high' => (float) $high,
-            ':low' => (float) $low,
-            ':close' => (float) $close,
+            ':open' => $openValue,
+            ':high' => $highValue,
+            ':low' => $lowValue,
+            ':close' => $closeValue,
             ':change' => $change,
             ':fuente' => $source,
         ]);
