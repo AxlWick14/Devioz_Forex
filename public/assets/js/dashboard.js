@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const focusSymbol = document.getElementById('focusSymbol');
     const focusMeta = document.getElementById('focusMeta');
     const focusTrend = document.getElementById('focusTrend');
+    const alertCount = document.getElementById('dashboardAlertCount');
 
     const summaryMarketState = document.getElementById('summaryMarketState');
     const summaryMarketLabel = document.getElementById('summaryMarketLabel');
@@ -114,6 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
             focusTrend.textContent = '--';
             focusTrend.className = 'focus-trend';
         }
+        if (alertCount) alertCount.textContent = '-- alertas';
 
         summaryMarketState.textContent = '--';
         summaryMarketLabel.textContent = 'Sin datos';
@@ -196,7 +198,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!list.length) {
             signals.innerHTML = '<div class="empty-state">No hay señales cálculables.</div>';
+            if (alertCount) alertCount.textContent = '0 alertas';
             return;
+        }
+
+        if (alertCount) {
+            const activeAlerts = list.filter((item) => item.changeValue >= 1).length;
+            alertCount.textContent = `${activeAlerts} alerta${activeAlerts === 1 ? '' : 's'}`;
         }
 
         signals.innerHTML = list.map((item) => `

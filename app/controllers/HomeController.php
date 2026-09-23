@@ -41,8 +41,4 @@ class HomeController extends Controller
         $this->view('public/pronosticos', ['titulo' => 'Pronósticos | Forex System']);
     }
 
-    public function alertas(): void
-    {
-        $this->view('public/alertas', ['titulo' => 'Alertas | Forex System']);
-    }
 }

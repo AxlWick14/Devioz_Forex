@@ -12,11 +12,9 @@ class Router
             'calculadora' => ['HomeController', 'calculadora'],
             'historial' => ['HomeController', 'historial'],
             'historial-data' => ['HistorialController', 'index'],
-            'historial-exportar' => ['HistorialController', 'exportar'],
             'dashboard' => ['HomeController', 'dashboard'],
             'pronosticos' => ['HomeController', 'pronosticos'],
             'pronosticos-data' => ['PronosticoController', 'index'],
-            'alertas' => ['HomeController', 'alertas'],
             'api/mercado' => ['CotizacionController', 'mercado'],
         ];
 

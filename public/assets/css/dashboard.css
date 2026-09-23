@@ -87,6 +87,17 @@
   font-size: clamp(1.5rem, 2vw, 2rem);
 }
 
+.alert-count {
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 193, 7, 0.32);
+  border-radius: 999px;
+  background: rgba(255, 193, 7, 0.08);
+  color: #ffd27c;
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .dashboard-cards {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -306,6 +317,60 @@
   line-height: 1.7;
 }
 
+.historical-forecast-panel {
+  margin-bottom: 28px;
+}
+
+.forecast-history-meta {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.forecast-asset-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.forecast-asset-btn {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  cursor: pointer;
+  padding: 10px 16px;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.forecast-asset-btn:hover,
+.forecast-asset-btn.active {
+  border-color: rgba(116, 167, 255, 0.75);
+  background: rgba(75, 140, 255, 0.18);
+  color: #dfeeff;
+  transform: translateY(-1px);
+}
+
+.forecast-history-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.forecast-history-heading h3 {
+  margin-top: 6px;
+}
+
+.forecast-history-heading > strong {
+  font-size: 1.35rem;
+}
+
+.forecast-chart-wrap {
+  height: 300px;
+}
+
 .full-width .table-wrapper {
   border: 1px solid rgba(116, 167, 255, 0.28);
   border-radius: 18px;
@@ -414,5 +479,14 @@
 
   .dashboard-cards {
     grid-template-columns: 1fr;
+  }
+
+  .forecast-history-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .forecast-chart-wrap {
+    height: 240px;
   }
 }

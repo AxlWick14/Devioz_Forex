@@ -8,15 +8,19 @@ class Historial
     private array $symbols = [
         'EUR/USD',
         'USD/PEN',
+        'JPY/USD',
         'BTC/USD',
         'ETH/USD',
+        'SOL/USD',
     ];
 
     private array $minimumDates = [
         'EUR/USD' => '2000-01-01',
         'USD/PEN' => '2000-01-01',
+        'JPY/USD' => '2000-01-01',
         'BTC/USD' => '2012-01-01',
         'ETH/USD' => '2015-01-01',
+        'SOL/USD' => '2020-01-01',
     ];
 
     public function __construct()
@@ -38,7 +42,7 @@ class Historial
                 $par,
                 $this->minimumDates[$par] ?? '2000-01-01',
                 $hasta,
-                10000
+                20000
             );
             $datos = array_merge($datos, $historico['datos']);
         }
@@ -62,7 +66,7 @@ class Historial
         if ($desde < $minimumDate) {
             $desde = $minimumDate;
         }
-        $limit = max(1, min(10000, $limit));
+        $limit = max(1, min(20000, $limit));
 
         $sql = "
             SELECT par, fecha, precio_apertura, precio_maximo, precio_minimo, precio_cierre, cambio_porcentual, fuente
@@ -105,6 +109,7 @@ class Historial
             'EUR/USD' => 1.0850,
             'GBP/USD' => 1.2700,
             'USD/PEN' => 3.7400,
+            'JPY/USD' => 0.0067,
             'BTC/USD' => 42000.00,
             'ETH/USD' => 2350.00,
             'SOL/USD' => 92.50,

@@ -8,6 +8,7 @@ class Pronostico
     private array $pares = [
         'EUR/USD',
         'USD/PEN',
+        'JPY/USD',
         'BTC/USD',
         'ETH/USD',
         'SOL/USD',

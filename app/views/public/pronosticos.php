@@ -3,6 +3,8 @@ require __DIR__ . '/../layouts/header.php';
 require __DIR__ . '/../layouts/navbar.php';
 ?>
 
+<link rel="stylesheet" href="<?= BASE_URL ?>assets/css/dashboard.css">
+
 <main class="page-shell forecast-page">
     <section class="container">
         <div class="page-heading">
@@ -58,6 +60,38 @@ require __DIR__ . '/../layouts/navbar.php';
             </div>
         </section>
 
+        <section class="panel dashboard-panel forecast-panel historical-forecast-panel">
+            <div class="panel-head">
+                <div>
+                    <span class="eyebrow">Datos históricos</span>
+                    <h2>Selecciona un activo</h2>
+                </div>
+                <span id="forecastHistoryMeta" class="forecast-history-meta">Últimos 60 registros</span>
+            </div>
+
+            <div class="forecast-asset-buttons" role="group" aria-label="Activos históricos">
+                <button class="forecast-asset-btn" type="button" data-par="SOL/USD">Sol</button>
+                <button class="forecast-asset-btn" type="button" data-par="EUR/USD">Euro</button>
+                <button class="forecast-asset-btn" type="button" data-par="USD/PEN">Dólar</button>
+                <button class="forecast-asset-btn" type="button" data-par="JPY/USD">Yen</button>
+                <button class="forecast-asset-btn" type="button" data-par="BTC/USD">Bitcoin</button>
+                <button class="forecast-asset-btn" type="button" data-par="ETH/USD">Ethereum</button>
+            </div>
+
+            <div class="forecast-history-heading">
+                <div>
+                    <span class="eyebrow">Precio de cierre</span>
+                    <h3 id="forecastHistoryTitle">SOL/USD</h3>
+                </div>
+                <strong id="forecastHistoryChange">--</strong>
+            </div>
+
+            <div class="forecast-chart-wrap">
+                <canvas id="forecastHistoryChart" height="110"></canvas>
+            </div>
+            <div id="forecastHistoryStatus" class="empty-state">Cargando histórico...</div>
+        </section>
+
         <section class="panel dashboard-panel forecast-panel full-width">
             <div class="panel-head">
                 <div>
@@ -75,9 +109,11 @@ require __DIR__ . '/../layouts/navbar.php';
 
 <script>
     window.forecastConfig = {
-        apiUrl: <?= json_encode(BASE_URL . 'pronosticos-data', JSON_UNESCAPED_SLASHES) ?>
+        apiUrl: <?= json_encode(BASE_URL . 'pronosticos-data', JSON_UNESCAPED_SLASHES) ?>,
+        historyUrl: <?= json_encode(BASE_URL . 'historial-data', JSON_UNESCAPED_SLASHES) ?>
     };
 </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="<?= BASE_URL ?>assets/js/forecast.js?v=<?= (int) filemtime(__DIR__ . '/../../../public/assets/js/forecast.js') ?>"></script>
 
 <?php require __DIR__ . '/../layouts/footer.php'; ?>

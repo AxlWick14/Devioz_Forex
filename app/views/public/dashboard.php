@@ -59,9 +59,10 @@ require __DIR__ . '/../layouts/navbar.php';
             <div class="panel dashboard-panel">
                 <div class="panel-head">
                     <div>
-                        <span class="eyebrow">Estado operativo</span>
-                        <h2>Alertas y señales</h2>
+                        <span class="eyebrow">Monitoreo automático</span>
+                        <h2>Alertas del mercado</h2>
                     </div>
+                    <span id="dashboardAlertCount" class="alert-count">--</span>
                 </div>
                 <div id="dashboardFocusCard" class="focus-card">
                     <span>Activo seleccionado</span>
