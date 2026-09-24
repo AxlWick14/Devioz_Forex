@@ -86,15 +86,6 @@ class Historial
 
         $datos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        if (count($datos) < 2) {
-            $datosApi = $this->obtenerHistoricoDesdeApi($par, $desde, $hasta);
-            if ($datosApi !== []) {
-                $datos = $datosApi;
-            } else {
-                $datos = $this->generarDatosDemo($par, $desde, $hasta);
-            }
-        }
-
         return [
             'par' => $par,
             'desde' => $desde,

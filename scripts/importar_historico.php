@@ -33,10 +33,10 @@ if ($headers === false) {
 $headers = array_map(static fn($header): string => strtolower(trim((string) $header)), $headers);
 $aliases = [
     'datetime' => ['datetime', 'date', 'timestamp', 'time', 'fecha'],
-    'open' => ['open', 'price_open', 'precio_apertura', 'precio_apertura'],
-    'high' => ['high', 'price_high', 'precio_maximo', 'precio_maximo'],
-    'low' => ['low', 'price_low', 'precio_minimo', 'precio_minimo'],
-    'close' => ['close', 'price_close', 'precio_cierre', 'precio_cierre'],
+    'open' => ['open', 'price_open', 'precio_apertura'],
+    'high' => ['high', 'price_high', 'precio_maximo'],
+    'low' => ['low', 'price_low', 'precio_minimo'],
+    'close' => ['close', 'price_close', 'precio_cierre'],
     'volume' => ['volume', 'volumen'],
 ];
 
@@ -97,7 +97,7 @@ $connection->beginTransaction();
 try {
     while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
         $dateValue = trim((string) ($row[$indexes['datetime']] ?? ''));
-        $dateTime = date_create($dateValue);
+        $dateTime = DateTime::createFromFormat('d/m/Y', $dateValue) ?: date_create($dateValue);
         $open = $row[$indexes['open']] ?? null;
         $high = $row[$indexes['high']] ?? null;
         $low = $row[$indexes['low']] ?? null;

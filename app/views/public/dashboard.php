@@ -6,21 +6,31 @@ require __DIR__ . '/../layouts/navbar.php';
 <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/dashboard.css">
 
 <main class="page-shell dashboard-page">
-    <section class="container">
-        <div class="page-heading">
-            <span class="eyebrow">Panel principal</span>
-            <h1>Dashboard Forex</h1>
-            <p>Resumen ejecutivo del mercado en tiempo real, con tendencia, variación, historial reciente y alertas operativas.</p>
-        </div>
-
-        <div class="dashboard-toolbar">
-            <div class="dashboard-filter-group" aria-label="Filtros del dashboard">
-                <button class="filter-btn active" type="button" data-filter="all">Todo</button>
-                <button class="filter-btn" type="button" data-filter="forex">Forex</button>
-                <button class="filter-btn" type="button" data-filter="crypto">Crypto</button>
+    <div class="dashboard-layout container">
+        <div class="dashboard-content">
+            <div class="dashboard-topline">
+                <div class="page-heading">
+                    <h1>HOME PAGE</h1>
+                    <p>Una vista operativa para entender el pulso de tus activos, detectar movimiento y actuar con contexto.</p>
+                </div>
+                <div class="dashboard-clock">
+                    <span>Última sincronización</span>
+                    <strong id="dashboardLiveClock">--:--</strong>
+                    <small id="dashboardSyncState">Conectando...</small>
+                </div>
             </div>
-            <button id="dashboardRefreshBtn" class="btn secondary" type="button">Actualizar</button>
-        </div>
+
+            <div class="dashboard-toolbar" id="overview">
+                <div class="toolbar-actions">
+                    <button id="dashboardSoundBtn" class="icon-btn" type="button" aria-label="Activar sonidos" title="Activar sonidos"><span aria-hidden="true">◖</span></button>
+                    <label class="refresh-toggle" for="dashboardAutoRefresh">
+                        <input id="dashboardAutoRefresh" type="checkbox">
+                        <span class="toggle-track" aria-hidden="true"></span>
+                        <span>Auto</span>
+                    </label>
+                    <button id="dashboardRefreshBtn" class="btn primary" type="button"><span class="button-icon" aria-hidden="true">↻</span> Actualizar</button>
+                </div>
+            </div>
 
         <div class="dashboard-summary" id="dashboardSummary">
             <article class="summary-card dashboard-card">
@@ -45,12 +55,16 @@ require __DIR__ . '/../layouts/navbar.php';
             </article>
         </div>
 
-        <section class="dashboard-grid">
-            <div class="panel dashboard-panel">
+        <section class="dashboard-grid" id="assets">
+            <div class="panel dashboard-panel" id="signals">
                 <div class="panel-head">
                     <div>
                         <span class="eyebrow">Tendencia</span>
                         <h2>Principales cotizaciones</h2>
+                    </div>
+                    <div class="dashboard-filter-group" aria-label="Filtrar cotizaciones">
+                        <button class="filter-btn active" type="button" data-filter="forex">FOREX</button>
+                        <button class="filter-btn" type="button" data-filter="crypto">CRYPTO</button>
                     </div>
                 </div>
                 <div id="dashboardMarketCards" class="dashboard-cards"></div>
@@ -74,7 +88,7 @@ require __DIR__ . '/../layouts/navbar.php';
             </div>
         </section>
 
-        <section class="panel dashboard-panel full-width">
+        <section class="panel dashboard-panel full-width" id="details">
             <div class="panel-head">
                 <div>
                     <span class="eyebrow">Comparativa</span>
@@ -101,8 +115,10 @@ require __DIR__ . '/../layouts/navbar.php';
                 </table>
             </div>
         </section>
-    </section>
+    </div>
 </main>
+
+<div id="dashboardToastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></div>
 
 <script>
     window.forexDashboardConfig = {

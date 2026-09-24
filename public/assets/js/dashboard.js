@@ -16,6 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const summaryTopMover = document.getElementById('summaryTopMover');
     const summaryTopMoverMeta = document.getElementById('summaryTopMoverMeta');
     const summaryAverageChange = document.getElementById('summaryAverageChange');
+    const dashboardSyncState = document.getElementById('dashboardSyncState');
+    const dashboardLiveClock = document.getElementById('dashboardLiveClock');
+    const dashboardSoundBtn = document.getElementById('dashboardSoundBtn');
+    const dashboardToastRegion = document.getElementById('dashboardToastRegion');
+    const dashboardAutoRefresh = document.getElementById('dashboardAutoRefresh');
 
     const symbols = ['USD/PEN', 'EUR/USD', 'GBP/USD', 'EUR/GBP', 'BTC/USD', 'ETH/USD', 'SOL/USD', 'XRP/USD'];
     const marketNames = {
@@ -30,13 +35,75 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const state = {
-        filter: 'all',
+        filter: 'forex',
         selectedSymbol: null,
         currentData: null,
+        soundEnabled: false,
+        audioContext: null,
+        lastAlertSignature: null,
+        autoRefreshTimer: null,
     };
+
+    function showToast(type, title, message) {
+        if (!dashboardToastRegion) return;
+        const icons = { success: '✓', error: '!', warning: '!', info: 'i' };
+        const toast = document.createElement('article');
+        toast.className = `dashboard-toast ${type}`;
+        toast.innerHTML = `
+            <span class="toast-icon" aria-hidden="true">${icons[type] || icons.info}</span>
+            <div><strong>${title}</strong><p>${message}</p></div>
+            <button class="toast-close" type="button" aria-label="Cerrar notificación">×</button>
+        `;
+        toast.querySelector('.toast-close').addEventListener('click', () => dismissToast(toast));
+        dashboardToastRegion.appendChild(toast);
+        playAlertSound(type);
+        window.setTimeout(() => dismissToast(toast), 4800);
+    }
+
+    function dismissToast(toast) {
+        if (!toast || toast.classList.contains('leaving')) return;
+        toast.classList.add('leaving');
+        window.setTimeout(() => toast.remove(), 260);
+    }
+
+    function playAlertSound(type) {
+        if (!state.soundEnabled || !window.AudioContext) return;
+        try {
+            state.audioContext ||= new AudioContext();
+            if (state.audioContext.state === 'suspended') return;
+            const oscillator = state.audioContext.createOscillator();
+            const gain = state.audioContext.createGain();
+            const frequencies = { success: 660, error: 180, warning: 330, info: 520 };
+            oscillator.frequency.value = frequencies[type] || frequencies.info;
+            oscillator.type = 'sine';
+            gain.gain.setValueAtTime(0.0001, state.audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.045, state.audioContext.currentTime + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, state.audioContext.currentTime + 0.18);
+            oscillator.connect(gain).connect(state.audioContext.destination);
+            oscillator.start();
+            oscillator.stop(state.audioContext.currentTime + 0.2);
+        } catch (error) {
+            // Audio is an enhancement; data loading must continue if it is unavailable.
+        }
+    }
+
+    function setLoadingState(isLoading) {
+        if (!marketCards || !signals || !tableBody) return;
+        if (!isLoading) return;
+        marketCards.innerHTML = '<div class="dashboard-skeleton"></div><div class="dashboard-skeleton"></div><div class="dashboard-skeleton"></div><div class="dashboard-skeleton"></div>';
+        signals.innerHTML = '<div class="dashboard-skeleton"></div><div class="dashboard-skeleton"></div>';
+        tableBody.innerHTML = '<tr><td colspan="6"><div class="dashboard-skeleton"></div></td></tr>';
+    }
+
+    function updateClock() {
+        if (!dashboardLiveClock) return;
+        dashboardLiveClock.textContent = new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+    }
 
     async function loadDashboard(forceRefresh = false) {
         setRefreshState(true);
+        setLoadingState(true);
+        if (dashboardSyncState) dashboardSyncState.textContent = 'Sincronizando...';
 
         try {
             const response = await fetch(`${window.forexDashboardConfig.apiUrl}?refresh=${forceRefresh ? 1 : 0}&t=${Date.now()}`, {
@@ -51,8 +118,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             state.currentData = data;
             renderDashboard(data);
+            if (dashboardSyncState) dashboardSyncState.textContent = data.cached ? 'Última copia disponible' : 'Datos actualizados';
+            updateClock();
+            if (forceRefresh) showToast('success', 'Mercado actualizado', 'Las cotizaciones más recientes ya están disponibles.');
         } catch (error) {
             renderEmptyState(error.message || 'Error cargando el dashboard.');
+            if (dashboardSyncState) dashboardSyncState.textContent = 'Sin conexión';
+            showToast('error', 'No se pudo actualizar', error.message || 'Revisa la conexión e inténtalo nuevamente.');
         } finally {
             setRefreshState(false);
         }
@@ -205,6 +277,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (alertCount) {
             const activeAlerts = list.filter((item) => item.changeValue >= 1).length;
             alertCount.textContent = `${activeAlerts} alerta${activeAlerts === 1 ? '' : 's'}`;
+            const alertSignature = list
+                .filter((item) => item.changeValue >= 1)
+                .map((item) => item.title)
+                .join('|');
+            if (activeAlerts > 0 && alertSignature !== state.lastAlertSignature) {
+                showToast('warning', 'Movimiento detectado', `${activeAlerts} activo${activeAlerts === 1 ? '' : 's'} superan el 1% de variación.`);
+            }
+            state.lastAlertSignature = alertSignature;
         }
 
         signals.innerHTML = list.map((item) => `
@@ -227,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const trend = trendInfo(change);
             const isSelected = state.selectedSymbol === entry.symbol;
             return `
-                <tr class="${isSelected ? 'selected-row' : ''}">
+                <tr class="${isSelected ? 'selected-row' : ''}" data-symbol="${entry.symbol}" tabindex="0">
                     <td><strong>${entry.symbol}</strong><small>${marketNames[entry.symbol]}</small></td>
                     <td>${formatPrice(detail.close ?? entry.quote, entry.symbol)}</td>
                     <td class="${trend.className}">${formatSigned(change, 2)}%</td>
@@ -237,6 +317,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 </tr>
             `;
         }).join('');
+
+        tableBody.querySelectorAll('[data-symbol]').forEach((row) => {
+            const selectRow = () => {
+                state.selectedSymbol = row.dataset.symbol;
+                renderDashboard(state.currentData);
+            };
+            row.addEventListener('click', selectRow);
+            row.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    selectRow();
+                }
+            });
+        });
     }
 
     function renderFocusCard(entry) {
@@ -295,10 +389,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function setRefreshState(isRefreshing) {
         if (!refreshButton) return;
         refreshButton.disabled = isRefreshing;
-        refreshButton.textContent = isRefreshing ? 'Actualizando...' : 'Actualizar';
+        refreshButton.innerHTML = isRefreshing ? '<span class="button-icon" aria-hidden="true">◌</span> Actualizando...' : '<span class="button-icon" aria-hidden="true">↻</span> Actualizar';
     }
 
-    refreshButton.addEventListener('click', () => loadDashboard(true));
+    if (refreshButton) refreshButton.addEventListener('click', () => loadDashboard(true));
+
+    if (dashboardSoundBtn) {
+        dashboardSoundBtn.addEventListener('click', () => {
+            state.soundEnabled = !state.soundEnabled;
+            dashboardSoundBtn.classList.toggle('active', state.soundEnabled);
+            dashboardSoundBtn.setAttribute('aria-label', state.soundEnabled ? 'Desactivar sonidos' : 'Activar sonidos');
+            dashboardSoundBtn.title = state.soundEnabled ? 'Desactivar sonidos' : 'Activar sonidos';
+            if (state.soundEnabled && window.AudioContext) {
+                state.audioContext ||= new AudioContext();
+                state.audioContext.resume().then(() => playAlertSound('info'));
+            }
+            showToast('info', state.soundEnabled ? 'Sonidos activados' : 'Sonidos desactivados', state.soundEnabled ? 'Escucharás avisos importantes una sola vez.' : 'Las alertas continuarán visibles sin audio.');
+        });
+    }
 
     filterButtons.forEach((button) => {
         button.addEventListener('click', () => {
@@ -308,11 +416,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    setInterval(() => {
-        if (state.currentData) {
-            loadDashboard(false);
+    function configureAutoRefresh() {
+        if (state.autoRefreshTimer) {
+            window.clearInterval(state.autoRefreshTimer);
+            state.autoRefreshTimer = null;
         }
-    }, 60000);
+        if (dashboardAutoRefresh?.checked) {
+            state.autoRefreshTimer = window.setInterval(() => loadDashboard(false), 70000);
+        }
+    }
+
+    if (dashboardAutoRefresh) {
+        dashboardAutoRefresh.addEventListener('change', () => {
+            configureAutoRefresh();
+            showToast('info', dashboardAutoRefresh.checked ? 'Actualización automática activa' : 'Actualización automática pausada', dashboardAutoRefresh.checked ? 'El mercado se actualizará cada 1 minuto y 10 segundos.' : 'Puedes actualizar manualmente cuando lo necesites.');
+        });
+    }
+
+    updateClock();
+    window.setInterval(updateClock, 30000);
 
     loadDashboard();
 });

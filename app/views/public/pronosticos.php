@@ -43,6 +43,7 @@ require __DIR__ . '/../layouts/navbar.php';
                         <span class="eyebrow">Escenarios</span>
                         <h2>Pronósticos activos</h2>
                     </div>
+                    <button id="forecastSoundBtn" class="icon-btn" type="button" aria-label="Activar sonidos de pronóstico" title="Activar sonidos de pronóstico"><span aria-hidden="true">◖</span></button>
                 </div>
 
                 <div id="forecastList" class="forecast-list"></div>
@@ -106,6 +107,8 @@ require __DIR__ . '/../layouts/navbar.php';
         </section>
     </section>
 </main>
+
+<div id="forecastToastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></div>
 
 <script>
     window.forecastConfig = {
