@@ -10,8 +10,8 @@ require __DIR__ . '/../layouts/navbar.php';
         <div class="dashboard-content">
             <div class="dashboard-topline">
                 <div class="page-heading">
-                    <h1>HOME PAGE</h1>
-                    <p>Una vista operativa para entender el pulso de tus activos, detectar movimiento y actuar con contexto.</p>
+                    <h1>OVERVIEW</h1>
+                    <p>Una plataforma operativa diseñada para monitorear el pulso de tus activos en tiempo real, identificar tendencias clave y tomar decisiones informadas con contexto estratégico.</p>
                 </div>
                 <div class="dashboard-clock">
                     <span>Última sincronización</span>
@@ -40,7 +40,7 @@ require __DIR__ . '/../layouts/navbar.php';
             </article>
             <article class="summary-card dashboard-card">
                 <span>Última actualización</span>
-                <strong id="summaryUpdatedAt">--</strong>
+                <strong id="summaryUpdatedAt">--</strong>-
                 <small id="summarySource">Fuente: --</small>
             </article>
             <article class="summary-card dashboard-card">

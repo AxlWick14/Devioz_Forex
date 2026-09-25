@@ -3,7 +3,7 @@ require __DIR__ . '/../layouts/header.php';
 require __DIR__ . '/../layouts/navbar.php';
 ?>
 
-<link rel="stylesheet" href="<?= BASE_URL ?>assets/css/calculadora.css">
+<link rel="stylesheet" href="<?= BASE_URL ?>assets/css/calculadora.css?v=<?= (int) filemtime(__DIR__ . '/../../../public/assets/css/calculadora.css') ?>">
 
 <main
     class="page-shell"
@@ -13,100 +13,51 @@ require __DIR__ . '/../layouts/navbar.php';
     data-manual-refresh-cooldown-ms="<?= (int) (defined('MANUAL_REFRESH_COOLDOWN_MS') ? MANUAL_REFRESH_COOLDOWN_MS : 300000) ?>"
 >
     <section class="container">
-        <div class="page-heading">
-            <span class="eyebrow">Herramienta</span>
-            <h1>Calculadora de divisas y criptomonedas</h1>
-            <p>Cotizaciones obtenidas desde Internet mediante el backend PHP de la plataforma.</p>
+        <div class="calculator-topline">
+            <div class="calculator-heading page-heading">
+                <span class="eyebrow">Divisas & cripto / Calculadora</span>
+                <h1>Convierte sin <span>límites.</span></h1>
+                <p>Un monto. Múltiples posibilidades. Explora el valor de tus activos.</p>
+            </div>
+            <div class="calculator-sync-card">
+                <span>Última sincronización</span>
+                <strong id="marketUpdatedAt">--:--</strong>
+                <small>Fuente: <span id="marketSource">Conectando...</span></small>
+            </div>
         </div>
 
         <div class="api-message" id="apiMessage" hidden></div>
 
         <div class="market-toolbar">
-            <div>
-                <strong>Cotizaciones actuales</strong>
-                <small>
-                    Fuente: <span id="marketSource">-</span>
-                    · Actualizado: <span id="marketUpdatedAt">-</span>
-                </small>
-            </div>
-
-            <div class="refresh-control">
-                <button type="button" class="btn secondary" id="refreshMarket">Actualizar</button>
+            <span class="calculator-toolbar-label"><span aria-hidden="true">◈</span> Centro de conversión</span>
+            <div class="calculator-toolbar-actions">
+                <label class="refresh-toggle" for="calculatorAutoRefresh">
+                    <input id="calculatorAutoRefresh" type="checkbox">
+                    <span class="toggle-track" aria-hidden="true"></span>
+                    <span>Autoactualizar</span>
+                </label>
+                <button type="button" class="btn primary" id="refreshMarket"><span aria-hidden="true">↻</span> Actualizar</button>
                 <small class="refresh-countdown" id="refreshCountdown" aria-live="polite"></small>
             </div>
         </div>
- 
-        <section class="calculator-section">
+
+        <div class="calculator-workspace">
+        <section class="calculator-section conversion-primary">
             <div class="section-title">
-                <span class="eyebrow">Forex</span>
-                <h2>Divisas principales</h2>
-            </div>
-
-            <div class="quote-grid">
-                <article class="quote-card">
-                    <span>USD / PEN</span>
-                    <strong id="quote-USD-PEN">Cargando...</strong>
-                    <small>Dólar / Sol</small>
-                </article>
-
-                <article class="quote-card">
-                    <span>EUR / USD</span>
-                    <strong id="quote-EUR-USD">Cargando...</strong>
-                    <small>Euro / Dólar</small>
-                </article>
-
-                <article class="quote-card">
-                    <span>GBP / USD</span>
-                    <strong id="quote-GBP-USD">Cargando...</strong>
-                    <small>Libra / Dólar</small>
-                </article>
-
-            </div>
-        </section>
-
-        <section class="calculator-section">
-            <div class="section-title">
-                <span class="eyebrow">Crypto</span>
-                <h2>Criptomonedas</h2>
-            </div>
-
-            <div class="quote-grid">
-                <article class="quote-card crypto">
-                    <span>BTC / USD</span>
-                    <strong id="quote-BTC-USD">Cargando...</strong>
-                    <small>Bitcoin</small>
-                </article>
-
-                <article class="quote-card crypto">
-                    <span>ETH / USD</span>
-                    <strong id="quote-ETH-USD">Cargando...</strong>
-                    <small>Ethereum</small>
-                </article>
-
-                <article class="quote-card crypto">
-                    <span>SOL / USD</span>
-                    <strong id="quote-SOL-USD">Cargando...</strong>
-                    <small>Solana</small>
-                </article>
-
-                <article class="quote-card crypto">
-                    <span>XRP / USD</span>
-                    <strong id="quote-XRP-USD">Cargando...</strong>
-                    <small>XRP</small>
-                </article>
-            </div>
-        </section>
-
-        <section class="calculator-section">
-            <div class="section-title">
-                <span class="eyebrow">Conversión</span>
-                <h2>Convertir</h2>
+                <span class="eyebrow">01 / Conversión</span>
+                <h2>Convierte tus activos</h2>
             </div>
 
             <div class="calculator-panel">
-                <div class="field">
-                    <label for="fxAmount">Monto</label>
+                <div class="field amount-field">
+                    <label for="fxAmount">Monto a convertir</label>
                     <input id="fxAmount" type="number" min="0" step="0.01" value="100">
+                    <div class="quick-amounts" aria-label="Montos rápidos">
+                        <button type="button" data-amount="100">100</button>
+                        <button type="button" data-amount="500">500</button>
+                        <button type="button" data-amount="1000">1.000</button>
+                        <button type="button" data-amount="5000">5.000</button>
+                    </div>
                 </div>
 
                 <div class="currency-row">
@@ -124,7 +75,7 @@ require __DIR__ . '/../layouts/navbar.php';
                         </select>
                     </div>
 
-                    <button class="swap-button" type="button" id="fxSwap" title="Intercambiar">⇄</button>
+                    <button class="swap-button" type="button" id="fxSwap" title="Intercambiar monedas" aria-label="Intercambiar monedas">⇄</button>
 
                     <div class="field">
                         <label for="fxTo">A</label>
@@ -142,16 +93,22 @@ require __DIR__ . '/../layouts/navbar.php';
                 </div>
 
                 <div class="conversion-result">
-                    <span>Resultado</span>
-                    <strong id="fxResult">Esperando cotizaciones...</strong>
+                    <div class="result-heading">
+                        <span>Recibes el equivalente a</span>
+                        <div class="result-actions">
+                            <button type="button" id="roundResult" class="copy-result round-result" aria-label="Activar redondeo a 2 decimales" aria-pressed="false" title="Mostrar el resultado con 2 decimales">2 decimales</button>
+                            <button type="button" id="copyResult" class="copy-result" aria-label="Copiar resultado" title="Copiar resultado">Copiar</button>
+                        </div>
+                    </div>
+                    <strong id="fxResult" aria-live="polite">Esperando cotizaciones...</strong>
                     <small id="fxRate"></small>
                 </div>
             </div>
         </section>
 
-        <section class="calculator-section">
+        <section class="calculator-section equivalences-panel">
             <div class="section-title">
-                <span class="eyebrow">Equivalencias</span>
+                <span class="eyebrow">02 / Equivalencias</span>
                 <h2 id="equivalenceTitle">El monto en otros activos</h2>
             </div>
 
@@ -161,6 +118,7 @@ require __DIR__ . '/../layouts/navbar.php';
             <h3 class="subheading crypto-heading">Criptomonedas</h3>
             <div class="equivalence-grid" id="cryptoEquivalences"></div>
         </section>
+        </div>
     </section>
 </main>
 

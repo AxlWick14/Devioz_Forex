@@ -2,10 +2,12 @@
     const config = window.forexMarketConfig;
     if (!config) return;
 
+    const workspace = document.getElementById('marketWorkspace');
     const sourceElement = document.getElementById('traderSource');
     const updatedAtElement = document.getElementById('traderUpdatedAt');
     const refreshButton = document.getElementById('traderRefresh');
     const refreshCountdown = document.getElementById('traderRefreshCountdown');
+    const autoRefreshToggle = document.getElementById('marketAutoRefresh');
     const messageElement = document.getElementById('traderMessage');
     const forexCards = document.getElementById('forexCards');
     const cryptoCards = document.getElementById('cryptoCards');
@@ -14,7 +16,9 @@
     const marketUpdatedKey = 'forex-market-updated-at';
     const marketDataKey = 'forex-market-data';
     const manualRefreshCooldownMs = 300000;
+    const refreshMs = Number(workspace?.dataset.refreshMs || 300000);
     let refreshCooldownTimer = null;
+    let autoRefreshTimer = null;
 
     const forexSymbols = ['USD/PEN', 'EUR/USD', 'GBP/USD', 'EUR/GBP'];
     const cryptoSymbols = ['BTC/USD', 'ETH/USD', 'SOL/USD', 'XRP/USD'];
@@ -83,7 +87,7 @@
         sourceElement.textContent = market.source || '-';
         const timestamp = Number(market.fetchedAt || market.updatedAt);
         updatedAtElement.textContent = Number.isFinite(timestamp)
-            ? new Date(timestamp * 1000).toLocaleString('es-PE')
+            ? new Date(timestamp * 1000).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })
             : '-';
 
         renderCards(forexSymbols, forexCards);
@@ -252,6 +256,17 @@
         messageElement.textContent = '';
     }
 
+    function updateAutoRefresh() {
+        if (autoRefreshTimer) {
+            clearInterval(autoRefreshTimer);
+            autoRefreshTimer = null;
+        }
+
+        if (autoRefreshToggle?.checked && refreshMs >= 60000) {
+            autoRefreshTimer = setInterval(() => loadMarket(false), refreshMs);
+        }
+    }
+
     refreshButton.addEventListener('click', () => {
         if (isRefreshOnCooldown()) {
             updateRefreshCooldown();
@@ -259,6 +274,8 @@
         }
         loadMarket(true, true);
     });
+
+    autoRefreshToggle?.addEventListener('change', updateAutoRefresh);
 
     window.addEventListener('storage', event => {
         if (event.key === refreshCooldownKey || event.key === marketUpdatedKey) {
@@ -282,5 +299,6 @@
     window.addEventListener('focus', updateRefreshCooldown);
     window.addEventListener('pageshow', updateRefreshCooldown);
     updateRefreshCooldown();
+    updateAutoRefresh();
     loadMarket();
 })();

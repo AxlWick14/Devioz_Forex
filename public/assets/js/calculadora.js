@@ -17,6 +17,11 @@
     const swapButton = document.getElementById('fxSwap');
     const refreshButton = document.getElementById('refreshMarket');
     const refreshCountdown = document.getElementById('refreshCountdown');
+    const autoRefreshToggle = document.getElementById('calculatorAutoRefresh');
+    const copyResultButton = document.getElementById('copyResult');
+    const roundResultButton = document.getElementById('roundResult');
+    const quoteCards = [...document.querySelectorAll('.quote-card[data-from][data-to]')];
+    const quickAmountButtons = [...document.querySelectorAll('[data-amount]')];
 
     const resultElement = document.getElementById('fxResult');
     const rateElement = document.getElementById('fxRate');
@@ -44,6 +49,8 @@
 
     let market = null;
     let refreshCooldownTimer = null;
+    let autoRefreshTimer = null;
+    let roundToTwoDecimals = false;
 
     async function loadMarket(forceRefresh = false, broadcastUpdate = false) {
         setLoading(true);
@@ -156,7 +163,7 @@
         sourceElement.textContent = market.source || '-';
         const timestamp = Number(market.fetchedAt || market.updatedAt);
         updatedAtElement.textContent = Number.isFinite(timestamp)
-            ? new Date(timestamp * 1000).toLocaleString('es-PE')
+            ? new Date(timestamp * 1000).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })
             : '-';
     }
 
@@ -219,7 +226,7 @@
         return (amount * sourceUsdValue) / targetUsdValue;
     }
 
-    function calculateAll() {
+    function calculateAll(animateEquivalences = false) {
         if (!market) return;
 
         const amount = Number(amountInput.value);
@@ -242,22 +249,78 @@
         }
 
         resultElement.textContent =
-            `${formatValue(amount, from)} ${from} = ${formatValue(result, to)} ${to}`;
+            `${formatValue(amount, from)} ${from} = ${formatConversionValue(result, to)} ${to}`;
+        animateResult();
 
         rateElement.textContent =
-            `1 ${from} = ${formatValue(oneUnit, to)} ${to}`;
+            `1 ${from} = ${formatConversionValue(oneUnit, to)} ${to}`;
+
+        updateSelectedQuote(from, to);
 
         equivalenceTitle.textContent =
             `${formatValue(amount, from)} ${from} en otros activos`;
 
-        renderEquivalences(fiatAssets, fiatContainer, amount, from);
-        renderEquivalences(cryptoAssets, cryptoContainer, amount, from);
+        renderEquivalences(fiatAssets, fiatContainer, amount, from, animateEquivalences);
+        renderEquivalences(cryptoAssets, cryptoContainer, amount, from, animateEquivalences);
     }
 
-    function renderEquivalences(assets, container, amount, from) {
+    function animateResult() {
+        if (
+            !resultElement.animate ||
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ) {
+            return;
+        }
+
+        resultElement.animate(
+            [
+                { opacity: 0.2, transform: 'translateY(8px) scale(.97)', filter: 'blur(2px)' },
+                { opacity: 1, transform: 'translateY(0) scale(1)', filter: 'blur(0)' }
+            ],
+            { duration: 360, easing: 'cubic-bezier(.2,.75,.25,1)' }
+        );
+    }
+
+    function animateSwap() {
+        if (
+            !swapButton.animate ||
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ) {
+            return;
+        }
+
+        swapButton.animate(
+            [
+                { transform: 'rotate(0) scale(1)' },
+                { transform: 'rotate(180deg) scale(1.2)' },
+                { transform: 'rotate(360deg) scale(1)' }
+            ],
+            { duration: 460, easing: 'cubic-bezier(.2,.75,.25,1)' }
+        );
+    }
+
+    function animateRoundButton() {
+        if (
+            !roundResultButton.animate ||
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ) {
+            return;
+        }
+
+        roundResultButton.animate(
+            [
+                { transform: 'scale(1)', filter: 'brightness(1)' },
+                { transform: 'scale(1.12)', filter: 'brightness(1.5)' },
+                { transform: 'scale(1)', filter: 'brightness(1)' }
+            ],
+            { duration: 360, easing: 'cubic-bezier(.2,.75,.25,1)' }
+        );
+    }
+
+    function renderEquivalences(assets, container, amount, from, animate = false) {
         container.innerHTML = '';
 
-        assets.forEach(asset => {
+        assets.forEach((asset, index) => {
             if (asset === from) return;
 
             const value = convert(amount, from, asset);
@@ -265,6 +328,11 @@
 
             const card = document.createElement('article');
             card.className = 'equivalence-card';
+            if (animate) {
+                card.classList.add('is-entering');
+                card.style.animationDelay = `${Math.min(index * 55, 165)}ms`;
+                card.addEventListener('animationend', () => card.classList.remove('is-entering'), { once: true });
+            }
 
             const info = document.createElement('div');
             const code = document.createElement('strong');
@@ -296,6 +364,36 @@
         });
     }
 
+    function formatConversionValue(value, asset) {
+        if (!roundToTwoDecimals) return formatValue(value, asset);
+
+        return Number(value).toLocaleString('es-PE', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function updateSelectedQuote(from, to) {
+        quoteCards.forEach(card => {
+            const isSelected = card.dataset.from === from && card.dataset.to === to;
+            card.classList.toggle('selected', isSelected);
+            card.setAttribute('aria-pressed', String(isSelected));
+        });
+    }
+
+    async function copyResult() {
+        const result = resultElement.textContent.trim();
+        if (!result || result.includes('Esperando') || result.includes('No se')) return;
+
+        try {
+            await navigator.clipboard.writeText(`${result} | ${rateElement.textContent}`);
+            copyResultButton.textContent = 'Copiado';
+            window.setTimeout(() => { copyResultButton.textContent = 'Copiar'; }, 1800);
+        } catch (error) {
+            showMessage('No se pudo copiar el resultado.', 'warning');
+        }
+    }
+
     function showMessage(text, type) {
         messageElement.hidden = false;
         messageElement.className = `api-message ${type}`;
@@ -308,15 +406,67 @@
         messageElement.className = 'api-message';
     }
 
+    function updateAutoRefresh() {
+        if (autoRefreshTimer) {
+            clearInterval(autoRefreshTimer);
+            autoRefreshTimer = null;
+        }
+
+        if (autoRefreshToggle?.checked && refreshMs >= 60000) {
+            autoRefreshTimer = setInterval(() => loadMarket(false), refreshMs);
+        }
+    }
+
     amountInput.addEventListener('input', calculateAll);
-    fromSelect.addEventListener('change', calculateAll);
-    toSelect.addEventListener('change', calculateAll);
+    fromSelect.addEventListener('change', () => calculateAll(true));
+    toSelect.addEventListener('change', () => calculateAll(true));
+
+    quickAmountButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            amountInput.value = button.dataset.amount;
+            quickAmountButtons.forEach(item => item.classList.toggle('active', item === button));
+            calculateAll(true);
+        });
+    });
+
+    quoteCards.forEach(card => {
+        const selectQuote = () => {
+            fromSelect.value = card.dataset.from;
+            toSelect.value = card.dataset.to;
+            calculateAll();
+        };
+
+        card.addEventListener('click', selectQuote);
+        card.addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                selectQuote();
+            }
+        });
+    });
+
+    copyResultButton.addEventListener('click', copyResult);
+
+    roundResultButton.addEventListener('click', () => {
+        animateRoundButton();
+        roundToTwoDecimals = !roundToTwoDecimals;
+        roundResultButton.setAttribute('aria-pressed', String(roundToTwoDecimals));
+        roundResultButton.setAttribute(
+            'aria-label',
+            roundToTwoDecimals ? 'Desactivar redondeo a 2 decimales' : 'Activar redondeo a 2 decimales'
+        );
+        roundResultButton.title = roundToTwoDecimals
+            ? 'Mostrar el resultado con precisión completa'
+            : 'Mostrar el resultado con 2 decimales';
+        calculateAll(true);
+    });
 
     swapButton.addEventListener('click', () => {
+        animateSwap();
         const currentFrom = fromSelect.value;
         fromSelect.value = toSelect.value;
         toSelect.value = currentFrom;
-        calculateAll();
+        calculateAll(true);
     });
 
     refreshButton.addEventListener('click', () => {
@@ -327,6 +477,8 @@
 
         loadMarket(true, true);
     });
+
+    autoRefreshToggle?.addEventListener('change', updateAutoRefresh);
 
     window.addEventListener('storage', event => {
         if (event.key === refreshCooldownKey || event.key === marketUpdatedKey) {
@@ -353,9 +505,6 @@
     window.addEventListener('pageshow', updateRefreshCooldown);
 
     updateRefreshCooldown();
+    updateAutoRefresh();
     loadMarket();
-
-    if (Number.isFinite(refreshMs) && refreshMs >= 60000) {
-        setInterval(() => loadMarket(false), refreshMs);
-    }
 })();

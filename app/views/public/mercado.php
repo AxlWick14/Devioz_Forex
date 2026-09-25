@@ -3,23 +3,32 @@ require __DIR__ . '/../layouts/header.php';
 require __DIR__ . '/../layouts/navbar.php';
 ?>
 
-<link rel="stylesheet" href="<?= BASE_URL ?>assets/css/mercado.css">
+<link rel="stylesheet" href="<?= BASE_URL ?>assets/css/mercado.css?v=<?= (int) filemtime(__DIR__ . '/../../../public/assets/css/mercado.css') ?>">
 
-<main class="page-shell">
+<main class="page-shell" id="marketWorkspace" data-refresh-ms="<?= (int) (defined('MARKET_REFRESH_MS') ? MARKET_REFRESH_MS : 300000) ?>">
     <section class="container">
-        <div class="page-heading">
-            <span class="eyebrow">Módulo Forex / Trader</span>
-            <h1>Mercado en tiempo real</h1>
-            <p>Consulta el precio actual, rango de la sesión, variación y tendencia de los principales pares.</p>
+        <div class="market-page-topline">
+            <div class="page-heading market-page-heading">
+                <span class="eyebrow">Módulo Forex / Trader</span>
+                <h1>MERCADO</h1>
+                <p>Consulta el precio actual, rango de la sesión, variación y tendencia de los principales pares.</p>
+            </div>
+            <div class="market-sync-card">
+                <span>Última sincronización</span>
+                <strong id="traderUpdatedAt">--:--</strong>
+                <small><span id="traderSource">Conectando...</span></small>
+            </div>
         </div>
 
-        <div class="trader-toolbar">
-            <div>
-                <strong>Resumen del mercado</strong>
-                <small>Fuente: <span id="traderSource">-</span> · Actualizado: <span id="traderUpdatedAt">-</span></small>
-            </div>
-            <div class="refresh-control">
-                <button class="btn secondary" id="traderRefresh" type="button">Actualizar</button>
+        <div class="market-toolbar" id="marketToolbar">
+            <div class="market-toolbar-actions">
+                <label class="refresh-toggle" for="marketAutoRefresh">
+                    <input id="marketAutoRefresh" type="checkbox">
+                    <span class="toggle-track" aria-hidden="true"></span>
+                    <span>Auto</span>
+                </label>
+                <button class="btn primary" id="traderRefresh" type="button"><span aria-hidden="true">↻</span> Actualizar</button>
+                <small class="market-connected"><span aria-hidden="true"></span> Mercado conectado</small>
                 <small class="refresh-countdown" id="traderRefreshCountdown" aria-live="polite"></small>
             </div>
         </div>
