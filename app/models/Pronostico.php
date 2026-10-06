@@ -1,17 +1,16 @@
 <?php
 require_once __DIR__ . '/../core/Database.php';
+require_once __DIR__ . '/ForecastMethods.php';
 
 class Pronostico
 {
     private Database $database;
 
     private array $pares = [
-        'EUR/USD',
-        'USD/PEN',
-        'JPY/USD',
         'BTC/USD',
         'ETH/USD',
-        'SOL/USD',
+        'USDT/USD',
+        'BNB/USD',
     ];
 
     public function __construct()
@@ -19,12 +18,12 @@ class Pronostico
         $this->database = new Database();
     }
 
-    public function obtenerPronosticos(): array
+    public function obtenerPronosticos(string $metodo = 'lineal'): array
     {
         $resultados = [];
 
         foreach ($this->pares as $par) {
-            $resultado = $this->generarPronostico($par);
+            $resultado = $this->generarPronostico($par, $metodo);
             if ($resultado !== []) {
                 $resultados[] = $resultado;
             }
@@ -38,13 +37,20 @@ class Pronostico
         return $resultados;
     }
 
-    public function generarPronostico(string $par): array
+    public function generarPronostico(string $par, string $metodo = 'lineal'): array
     {
         $historico = $this->obtenerHistorico($par, 120);
 
         if (count($historico) < 10) {
             return [];
         }
+        $hoy = (new DateTimeImmutable('now', new DateTimeZone('America/Lima')))->format('Y-m-d');
+        $historico = array_values(array_filter($historico, static fn($row) => substr($row['fecha'], 0, 10) <= $hoy));
+        $validacion = ForecastMethods::calibrate($historico, $metodo);
+        $ajuste = array_slice($historico, -$validacion['ventana']);
+        $proyeccion = ForecastMethods::project($ajuste, $metodo, 7, $hoy, true);
+        if ($proyeccion === []) return [];
+        $presente = array_shift($proyeccion);
 
         $precios = array_map(static fn(array $fila): float => (float) $fila['precio_cierre'], $historico);
         $retornos = [];
@@ -58,13 +64,20 @@ class Pronostico
         $mediaCorta = $this->promedio(array_slice($precios, -7));
         $mediaLarga = $this->promedio(array_slice($precios, -30));
         $volatilidad = $this->desviacionEstandar($retornos);
-        $pendiente = $this->calcularPendiente($precios);
-        $estimado = $precioActual * (1 + ($pendiente * 0.18) + (($mediaCorta - $mediaLarga) / max($mediaLarga, 0.00001)) * 0.35);
+        $estimado = $proyeccion[array_key_last($proyeccion)]['precio'];
         $cambioEstimado = (($estimado - $precioActual) / max($precioActual, 0.00001)) * 100;
         $confianza = $this->calcularConfianza($cambioEstimado, $volatilidad);
 
         return [
             'par' => $par,
+            'metodo' => $metodo,
+            'validacion' => $validacion,
+            'observaciones' => count($ajuste),
+            'fecha_base' => $historico[array_key_last($historico)]['fecha'],
+            'fecha_presente' => $hoy,
+            'precio_presente' => $presente['precio'],
+            'horizonte_dias' => 7,
+            'proyeccion' => $proyeccion,
             'precio_actual' => round($precioActual, 6),
             'precio_estimado' => round($estimado, 6),
             'cambio_estimado' => round($cambioEstimado, 2),

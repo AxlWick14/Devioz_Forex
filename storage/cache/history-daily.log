@@ -1,0 +1,10 @@
+﻿[2026-10-06 10:16:32] Inicio de actualizaciÃ³n
+EUR/USD: {"par":"EUR\/USD","registros":180,"ultima_fecha":"2026-10-04","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299205}
+USD/PEN: {"par":"USD\/PEN","registros":180,"ultima_fecha":"2026-10-04","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"pendiente","dia":"2026-10-06","intento":1791299792,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+JPY/USD: {"par":"JPY\/USD","registros":180,"ultima_fecha":"2026-10-04","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"pendiente","dia":"2026-10-06","intento":1791299723,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+BTC/USD: {"par":"BTC\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299206}
+ETH/USD: {"par":"ETH\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299207}
+USDT/USD: {"par":"USDT\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299207}
+BNB/USD: {"par":"BNB\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299208}
+SOL/USD: {"par":"SOL\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299724}
+[2026-10-06 10:16:33] Fin de actualizaciÃ³n; cÃ³digo 0

@@ -101,3 +101,20 @@ La pestaña Historial permite descargar archivos CSV separados para dólar (`USD
 ## Nota sobre “tiempo real”
 
 La versión incluida usa REST y actualización automática. Para streaming tick a tick se necesitaría pasar a WebSocket.
+
+## Actualización diaria del histórico
+
+
+
+
+El calendario abre desde siete días atrás hasta hoy, usando la zona `America/Lima`. Las fechas seleccionadas se conservan aunque falten cierres. La página comprueba el cambio de día cada minuto y al volver a la pestaña; el rango predeterminado avanza automáticamente.
+
+El backend descarga los cierres publicados para todos los activos del historial: USD/PEN, EUR/USD, JPY/USD, BTC/USD, ETH/USD, USDT/USD, BNB/USD y SOL/USD. El cierre de hoy se incorpora después de finalizar el día. El control compartido por activo en `storage/cache/history-sync-*.json` evita descargas duplicadas. Los límites de consultas permiten reintentar después de un minuto; otros errores y cierres pendientes se revisan cada hora. La tarea diaria espera un minuto y reintenta una vez si el proveedor limita las consultas. Si faltan cierres esperados, la interfaz muestra el estado pendiente.
+
+En este equipo se registró la tarea Windows `ForexSystemRealtime-HistoricoDiario`, que ejecuta `scripts/actualizar_historico_diario.ps1` cada hora con la ventana oculta. Requiere una sesión de Windows abierta, MySQL disponible y conexión al proveedor. Cada ejecución agrega sus resultados, hora de inicio y código de salida a `storage/cache/history-daily.log` en UTF-8. Los registros antiguos en UTF-16 se conservan en un archivo `history-daily-legacy-*.log`. La aplicación también comprueba la actualización al consultar el histórico reciente.
+
+Para ejecutar una actualización manual inmediata:
+
+```powershell
+C:\xampp\php\php.exe scripts\actualizar_historico_diario.php --force
+```

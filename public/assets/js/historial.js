@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableBody = document.getElementById('historialTableBody');
     const buscarBtn = document.getElementById('historialBuscar');
     const chartCanvas = document.getElementById('historialChart');
+    const historialGapNote = document.getElementById('historialGapNote');
     const historialParTitle = document.getElementById('historialParTitle');
     const historialMeta = document.getElementById('historialMeta');
     const historialChartTitle = document.getElementById('historialChartTitle');
@@ -20,6 +21,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let datePickers = [];
     let allRows = [];
     let visibleRowsCount = 15;
+    let requestId = 0;
+    const todayInLima = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Lima', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+    const shiftDate = (date, days) => {
+        const value = new Date(date + 'T12:00:00Z');
+        value.setUTCDate(value.getUTCDate() + days);
+        return value.toISOString().slice(0, 10);
+    };
+    let currentDay = todayInLima();
+    desdeInput.value = shiftDate(currentDay, -7);
+    hastaInput.value = currentDay;
 
     const formatValue = (value, digits = 5) => Number(value ?? 0).toFixed(digits);
     const formatPercent = (value) => `${Number(value ?? 0).toFixed(2)}%`;
@@ -38,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
             altInput: false,
             locale: 'es',
             allowInput: false,
+            maxDate: todayInLima(),
             onChange: () => {
                 if (desdeInput.value && hastaInput.value) {
                     cargarHistorial();
@@ -49,17 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateAvailableDates(rows) {
         availableDates = new Set(rows.map((row) => row.fecha));
 
-        if (availableDates.size) {
-            const dates = [...availableDates].sort();
-            if (!availableDates.has(desdeInput.value)) {
-                desdeInput.value = dates[0];
-            }
-            if (!availableDates.has(hastaInput.value)) {
-                hastaInput.value = dates[dates.length - 1];
-            }
-        }
-
-        initializeDatePickers();
+        datePickers.forEach((picker) => picker.redraw());
     }
 
     function actualizarResumenVacio() {
@@ -135,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function cargarHistorial() {
+        const request = ++requestId;
         const par = parSelect.value;
         const desde = desdeInput.value;
         const hasta = hastaInput.value;
@@ -143,8 +146,8 @@ document.addEventListener('DOMContentLoaded', () => {
             actualizarResumenVacio();
             return;
         }
-
-        if (!chartCanvas || typeof Chart === 'undefined') {
+        if (desde > hasta || hasta > todayInLima()) {
+            document.getElementById('historialSyncStatus').textContent = 'Selecciona un rango válido hasta la fecha de hoy.';
             return;
         }
 
@@ -152,18 +155,44 @@ document.addEventListener('DOMContentLoaded', () => {
         const url = `${historialConfig.apiUrl}?par=${encodeURIComponent(par)}&desde=${encodeURIComponent(desde)}&hasta=${encodeURIComponent(hasta)}`;
 
         try {
-            const response = await fetch(url);
+            historialGapNote.hidden = true;
+            document.getElementById('historialSyncStatus').textContent = 'Consultando y actualizando los cierres disponibles…';
+            const response = await fetch(url, { cache: 'no-store' });
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
 
             const data = await response.json();
+            if (request !== requestId) return;
             if (!data || !Array.isArray(data.datos)) {
                 throw new Error('Respuesta inválida del historial');
             }
 
             allRows = data.datos;
             updateAvailableDates(allRows);
+            const sync = data.actualizacion;
+            const latest = allRows.length ? allRows[allRows.length - 1].fecha : 'sin registros en este rango';
+            const syncStatus = document.getElementById('historialSyncStatus');
+            const highlights = [
+                { label: 'Período seleccionado', value: `${desde} → ${hasta}`, className: 'history-sync-period' },
+                { label: 'Último cierre disponible', value: latest, className: 'history-sync-latest' }
+            ].map(({ label, value, className }) => {
+                const item = document.createElement('span');
+                item.className = `history-sync-highlight ${className}`;
+                const caption = document.createElement('span');
+                caption.textContent = label;
+                const date = document.createElement('strong');
+                date.textContent = value;
+                item.append(caption, date);
+                return item;
+            });
+            syncStatus.replaceChildren(...highlights);
+            if (sync?.estado === 'error' || sync?.estado === 'pendiente') {
+                const details = document.createElement('span');
+                details.className = 'history-sync-details';
+                details.textContent = `${sync.mensaje} Se reintentará automáticamente.`;
+                syncStatus.append(details);
+            }
 
             if (chartInstance) {
                 chartInstance.destroy();
@@ -173,20 +202,89 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!allRows.length) {
                 actualizarResumenVacio();
                 renderHistorialRows();
-                return;
+            } else {
+                renderHistorialRows();
+                actualizarResumen(allRows, par);
             }
 
-            renderHistorialRows();
-            actualizarResumen(allRows, par);
+            const byDate = new Map(allRows.map((row) => [row.fecha, Number(row.precio_cierre)]));
+            const labels = [];
+            for (let date = desde; date <= hasta; date = shiftDate(date, 1)) labels.push(date);
+            const values = labels.map((date) => byDate.get(date) ?? null);
+            const missingCount = values.filter((value) => value === null).length;
+            historialGapNote.textContent = `Sin cierres disponibles: ${missingCount} ${missingCount === 1 ? 'día sin cotización de cierre publicada' : 'días sin cotización de cierre publicada'} en el período seleccionado. Las zonas rayadas indican datos faltantes; no representan precios estimados.`;
+            historialGapNote.hidden = missingCount === 0;
 
-            const labels = allRows.map((row) => row.fecha);
-            const values = allRows.map((row) => Number(row.precio_cierre ?? 0));
-            const firstValue = Number(allRows[0].precio_cierre ?? 0);
-            const lastValue = Number(allRows[allRows.length - 1].precio_cierre ?? 0);
+            if (!chartCanvas || typeof Chart === 'undefined') return;
+            const firstValue = Number(allRows[0]?.precio_cierre ?? 0);
+            const lastValue = Number(allRows[allRows.length - 1]?.precio_cierre ?? 0);
             const trendColor = lastValue >= firstValue ? '#7df0b0' : '#ff9a9f';
 
             chartInstance = new Chart(chartCanvas, {
                 type: 'line',
+                plugins: [{
+                    id: 'historyMissingCloses',
+                    beforeDraw(chart) {
+                        const { ctx, chartArea, scales } = chart;
+                        if (!chartArea) return;
+                        ctx.save();
+                        ctx.fillStyle = 'rgba(233, 191, 119, 0.07)';
+                        for (let index = 0; index < values.length; index++) {
+                            if (values[index] !== null) continue;
+                            const start = index;
+                            while (index + 1 < values.length && values[index + 1] === null) index++;
+                            const left = start === 0 ? chartArea.left :
+                                scales.x.getPixelForValue(start - 1);
+                            const right = index === values.length - 1 ? chartArea.right :
+                                scales.x.getPixelForValue(index + 1);
+                            ctx.fillRect(left, chartArea.top, right - left, chartArea.bottom - chartArea.top);
+                            ctx.save();
+                            ctx.beginPath();
+                            ctx.rect(left, chartArea.top, right - left, chartArea.bottom - chartArea.top);
+                            ctx.clip();
+                            ctx.strokeStyle = 'rgba(233, 191, 119, 0.15)';
+                            ctx.lineWidth = 1;
+                            for (let y = chartArea.top - (right - left); y < chartArea.bottom; y += 12) {
+                                ctx.beginPath();
+                                ctx.moveTo(left, y);
+                                ctx.lineTo(right, y + right - left);
+                                ctx.stroke();
+                            }
+                            ctx.restore();
+                        }
+                        ctx.restore();
+                    },
+                    afterDraw(chart) {
+                        const { ctx, chartArea, scales } = chart;
+                        if (!chartArea) return;
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.rect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
+                        ctx.clip();
+                        ctx.font = '600 12px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillStyle = '#e9bf77';
+                        const message = 'Sin cierres disponibles';
+                        for (let index = 0; index < values.length; index++) {
+                            if (values[index] !== null) continue;
+                            const start = index;
+                            while (index + 1 < values.length && values[index + 1] === null) index++;
+                            const left = start === 0 ? chartArea.left :
+                                scales.x.getPixelForValue(start - 1);
+                            const right = index === values.length - 1 ? chartArea.right :
+                                scales.x.getPixelForValue(index + 1);
+                            ctx.save();
+                            ctx.translate((left + right) / 2, (chartArea.top + chartArea.bottom) / 2);
+                            if (right - left >= 18) {
+                                ctx.rotate(-Math.PI / 2);
+                                ctx.fillText(message, 0, 0, chartArea.bottom - chartArea.top - 16);
+                            }
+                            ctx.restore();
+                        }
+                        ctx.restore();
+                    }
+                }],
                 data: {
                     labels,
                     datasets: [{
@@ -198,6 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         tension: 0.25,
                         pointRadius: 2,
                         pointHoverRadius: 5,
+                        spanGaps: false,
                         fill: true
                     }]
                 },
@@ -236,6 +335,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         } catch (error) {
+            if (request !== requestId) return;
+            historialGapNote.hidden = true;
+            document.getElementById('historialSyncStatus').textContent = 'No se pudo consultar el histórico. Se reintentará automáticamente.';
+            if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
             actualizarResumenVacio();
             allRows = [];
             renderHistorialRows();
@@ -254,4 +357,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initializeDatePickers();
     cargarHistorial();
+    function refreshDay() {
+        const nextDay = todayInLima();
+        if (nextDay !== currentDay) {
+            const followsToday = hastaInput.value === currentDay;
+            const followsWeek = followsToday && desdeInput.value === shiftDate(currentDay, -7);
+            currentDay = nextDay;
+            datePickers.forEach((picker) => picker.set('maxDate', currentDay));
+            if (followsToday) {
+                if (followsWeek) desdeInput.value = shiftDate(currentDay, -7);
+                hastaInput.value = currentDay;
+                datePickers.forEach((picker) => picker.setDate(picker.input.value, false));
+            }
+        }
+        cargarHistorial();
+    }
+    window.setInterval(refreshDay, 60000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshDay(); });
 });

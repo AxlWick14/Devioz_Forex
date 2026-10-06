@@ -11,7 +11,7 @@ require __DIR__ . '/../layouts/navbar.php';
             <div class="dashboard-topline">
                 <div class="page-heading">
                     <h1>OVERVIEW</h1>
-                    <p>Una plataforma operativa diseñada para monitorear el pulso de tus activos en tiempo real, identificar tendencias clave y tomar decisiones informadas con contexto estratégico.</p>
+                    <p>Una plataforma operativa diseñada para monitorear el pulso de tus activos en tiempo real, identificar tendencias clave y tomar decisiones informadas con contexto estratégico.   </p>
                 </div>
                 <div class="dashboard-clock">
                     <span>Última sincronización</span>

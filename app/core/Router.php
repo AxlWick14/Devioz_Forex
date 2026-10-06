@@ -12,6 +12,7 @@ class Router
             'calculadora' => ['HomeController', 'calculadora'],
             'historial' => ['HomeController', 'historial'],
             'historial-data' => ['HistorialController', 'index'],
+            'historial-sync' => ['HistorialController', 'sincronizar'],
             'dashboard' => ['HomeController', 'dashboard'],
             'pronosticos' => ['HomeController', 'pronosticos'],
             'pronosticos-data' => ['PronosticoController', 'index'],
