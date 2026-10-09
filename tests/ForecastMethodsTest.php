@@ -64,4 +64,25 @@ for ($i = 0; $i < 120; $i++) {
 }
 $validation = ForecastMethods::calibrate($regime, 'lineal');
 check($validation['ventana'] === 30, 'Calibration favors recent window after trend reversal');
+$automatic = ForecastMethods::bestModel($regime, '2026-04-30');
+check(in_array($automatic['metodo'], ForecastMethods::METHODS, true), 'Automatic selection uses an available model');
+check(count($automatic['proyeccion']) === 8, 'Automatic selection includes today and seven future days');
+foreach (ForecastMethods::METHODS as $method) {
+    $candidate = ForecastMethods::calibrate($regime, $method);
+    check($automatic['validacion']['error_mape'] <= $candidate['error_mape'], 'Automatic selection minimizes temporal validation error');
+}
+$short = array_slice(series(fn($i) => 100), 0, 10);
+$automatic = ForecastMethods::bestModel($short, '2026-01-10');
+check($automatic['validacion']['error_mape'] === null, 'Automatic selection does not invent validation for short history');
+check(ForecastMethods::bestModel(array_slice($short, 0, 9), '2026-01-10') === [], 'Automatic selection rejects insufficient history');
 echo "Forecast method checks passed.\n";
+$probability = ForecastMethods::directionProbabilities(series(fn($i) => 100 + 2 * $i), 'lineal', 30, 172, 158);
+check($probability['evaluaciones'] >= 10 && $probability['subida'] > 50, 'Upward projections favor upward probability');
+check(abs($probability['subida'] + $probability['bajada'] - 100) < .001, 'Direction probabilities sum to 100');
+$probability = ForecastMethods::directionProbabilities(series(fn($i) => 200 - 2 * $i), 'lineal', 30, 128, 142);
+check($probability['bajada'] > 50 && $probability['bajada'] < 100, 'Downward forecasts favor decline without claiming certainty');
+$probability = ForecastMethods::directionProbabilities(series(fn($i) => 100), 'holt', 30, 100, 100);
+check($probability['subida'] === 50.0 && $probability['bajada'] === 50.0, 'Flat series balances probabilities');
+$probability = ForecastMethods::directionProbabilities($short, 'lineal', 30, 100, 100);
+check($probability['subida'] === null && $probability['bajada'] === null, 'Insufficient backtests do not invent probabilities');
+echo "Direction probability checks passed.\n";

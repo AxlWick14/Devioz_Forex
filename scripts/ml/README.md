@@ -60,3 +60,48 @@ archivos de origen desconocido. No expongas el servicio Flask a Internet.
 
 Documentación del algoritmo:
 https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html
+
+## XGBoost: dependencia instalada
+
+El Python local `scripts\ml\.python\python.exe` tiene instalado **XGBoost 3.4.1**.
+La versión queda registrada en `requirements.txt`. Para instalar las dependencias
+en ese mismo entorno:
+
+```powershell
+& scripts\ml\.python\python.exe -m pip install -r scripts\ml\requirements.txt
+```
+
+Se verificaron la importación, la biblioteca nativa, el entrenamiento de
+`XGBRegressor` en CPU y la predicción con datos sintéticos. `pip check` no detectó
+dependencias incompatibles. Esta comprobación valida la instalación; no mide
+precisión sobre cotizaciones.
+
+Los datos de **Twelve Data** ya se descargan mediante PHP y se guardan en MySQL
+(`historico_cotizaciones`). El futuro motor XGBoost puede reutilizarlos para
+USD/PEN, EUR/USD, BTC/USD y ETH/USD. Python recibirá los históricos preparados;
+la clave del proveedor continúa en el servidor PHP. Se deben excluir las velas
+del día actual y tratar los huecos antes del entrenamiento.
+
+El motor `xgboost_forecast.py` ya está integrado con Pronósticos para los cuatro
+activos. PHP le entrega JSON y reutiliza resultados privados en `storage/ml`.
+El Administrador puede elegir XGBoost; el Usuario recibe la selección automática.
+El script `btc_model.py` conserva su implementación ExtraTrees.
+
+Registro: [instalación de XGBoost y fuente Twelve Data](../../docs/cambios/2026-10-09-instalacion-xgboost.md).
+
+Funcionamiento, validación y probabilidades:
+[XGBoost aplicado a Pronósticos](../../docs/cambios/2026-10-09-desarrollo-xgboost.md).
+
+Preparar los resultados con el histórico actual de MySQL:
+
+```powershell
+& C:/xampp/php/php.exe scripts/precalcular_xgboost.php
+```
+
+Pruebas del motor Python y del puente PHP (las de PHP requieren MySQL):
+
+```powershell
+& scripts/ml/.python/python.exe scripts/ml/test_xgboost_forecast.py
+& C:/xampp/php/php.exe tests/XgboostForecastTest.php
+& C:/xampp/php/php.exe tests/ForecastRolesHttpTest.php
+```

@@ -8,5 +8,6 @@
     <script src="<?= BASE_URL ?>assets/js/theme.js?v=<?= (int) filemtime(__DIR__ . '/../../../public/assets/js/theme.js') ?>"></script>
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/style.css?v=<?= (int) filemtime(__DIR__ . '/../../../public/assets/css/style.css') ?>">
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/theme.css?v=<?= (int) filemtime(__DIR__ . '/../../../public/assets/css/theme.css') ?>">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/accounts.css?v=<?= (int) filemtime(__DIR__ . '/../../../public/assets/css/accounts.css') ?>">
 </head>
 <body>

@@ -1,13 +1,67 @@
 /* Shared header switch and daytime palette. Dark keeps the original design. */
 :root { color-scheme: dark; }
+/* Diagonal enchantment glint follows the selected theme's accent colors. */
+.main-nav .admin-enchanted {
+    display: inline-flex;
+    align-items: center;
+    color: var(--accent2);
+    border-radius: 4px;
+    text-shadow: 0 0 10px var(--accent);
+}
+.admin-enchanted-label {
+    display: inline-block;
+    color: var(--accent2);
+}
+@supports ((background-clip: text) or (-webkit-background-clip: text)) {
+    .admin-enchanted-label {
+        background-image:
+            repeating-linear-gradient(115deg, transparent 0 18px, var(--accent2) 25px, var(--text) 29px, var(--accent2) 33px, transparent 42px 64px),
+            linear-gradient(var(--accent), var(--accent2));
+        background-size: 256px 100%, 100% 100%;
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        animation: admin-enchantment 4s linear infinite;
+    }
+}
+.main-nav .admin-enchanted:focus-visible {
+    outline: 2px solid var(--accent2);
+    outline-offset: 5px;
+}
+@keyframes admin-enchantment {
+    from { background-position: 0 0, 0 0; }
+    to { background-position: 256px 0, 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .admin-enchanted-label { animation: none; background-position: 32px 0, 0 0; }
+}
 .nav-wrap { gap: 20px; }
 .brand-controls { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
 .brand { white-space: nowrap; }
 .brand-mark { color: #fff; }
+.home-tool-lock { display:block; justify-self:end; color:var(--accent2); flex-shrink:0; }
+.home-tool:focus-visible { outline:2px solid var(--accent2); outline-offset:4px; }
 .theme-toggle { display: inline-grid; place-items: center; width: 40px; height: 40px; min-height: 40px; flex: 0 0 40px; padding: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--bg2); color: var(--text); cursor: pointer; }
 .theme-toggle:hover { border-color: var(--accent); }
 .theme-toggle:focus-visible { outline: 2px solid var(--accent2); outline-offset: 4px; }
 .theme-icon { display: block; width: 20px; height: 20px; color: var(--accent2); flex-shrink: 0; }
+.theme-toggle { transition: border-color .2s ease, transform .2s ease; }
+.theme-toggle:active { transform: scale(.9); }
+/* Allow clicks to reach the button while transition snapshots cover the page. */
+html.theme-reveal::view-transition { pointer-events: none; }
+html.theme-reveal::view-transition-group(root) { animation: none; }
+html.theme-reveal::view-transition-old(root),
+html.theme-reveal::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html.theme-reveal::view-transition-old(root) { z-index: 1; }
+html.theme-reveal::view-transition-new(root) { z-index: 2; }
+.theme-wave-overlay { position:fixed; top:0; left:0; width:200px; height:200px; pointer-events:none; view-transition-name:theme-wave; }
+html.theme-reveal::view-transition-group(theme-wave) { z-index:3; animation:none; pointer-events:none; }
+html.theme-reveal::view-transition-new(theme-wave) { animation:none; transform-origin:100px 100px; mix-blend-mode:normal; }
+html.theme-reveal::view-transition-old(theme-wave) { display:none; }
+@media (prefers-reduced-motion: reduce) {
+    .theme-toggle { transition: none; }
+    .theme-toggle:active { transform: none; }
+}
 @media (max-width: 1150px) and (min-width: 701px) {
     .main-nav { gap: 14px; font-size: 12px; }
     .brand-controls { gap: 10px; }

@@ -1,1 +1,1 @@
-{"par":"EUR\/USD","registros":180,"ultima_fecha":"2026-10-04","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299205}
+{"par":"EUR\/USD","registros":180,"ultima_fecha":"2026-10-07","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"pendiente","dia":"2026-10-09","intento":1791568134,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}

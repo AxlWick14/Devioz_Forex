@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/../../app/core/bootstrap.php';
+if (!Access::exigir('bitcoin-predictor')) exit;
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>

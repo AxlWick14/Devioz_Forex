@@ -1,5 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     const parSelect = document.getElementById('historialPar');
+    const requestedPair = new URLSearchParams(window.location.search).get('par');
+    if (requestedPair && Array.from(parSelect.options).some(option => option.value === requestedPair)) {
+        parSelect.value = requestedPair;
+    }
     const desdeInput = document.getElementById('historialDesde');
     const hastaInput = document.getElementById('historialHasta');
     const tableBody = document.getElementById('historialTableBody');

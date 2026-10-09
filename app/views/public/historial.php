@@ -124,6 +124,10 @@ require __DIR__ . '/../layouts/navbar.php';
                             <option value="EUR/USD">EUR/USD</option>
                             <option value="BTC/USD">BTC/USD</option>
                             <option value="ETH/USD">ETH/USD</option>
+                            <option value="JPY/USD">JPY/USD</option>
+                            <option value="USDT/USD">USDT/USD</option>
+                            <option value="BNB/USD">BNB/USD</option>
+                            <option value="SOL/USD">SOL/USD</option>
                         </select>
                     </div>
                     <div class="field compact">

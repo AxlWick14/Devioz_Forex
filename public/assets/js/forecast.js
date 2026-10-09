@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const isAdmin = window.forecastConfig.isAdmin === true;
     const forecastList = document.getElementById('forecastList');
     const forecastSignals = document.getElementById('forecastSignals');
     const forecastTopConfianza = document.getElementById('forecastTopConfianza');
@@ -19,12 +20,19 @@ document.addEventListener('DOMContentLoaded', () => {
     let syncingHistory = false;
     const syncButton = document.getElementById('forecastSyncHistory');
     const syncStatus = document.getElementById('forecastSyncStatus');
-    const allowedPairs = ['BTC/USD', 'ETH/USD', 'USDT/USD', 'BNB/USD'];
-    let selectedPair = 'BTC/USD';
+    const allowedPairs = ['USD/PEN', 'EUR/USD', 'BTC/USD', 'ETH/USD'];
+    const assetNames = { 'USD/PEN': 'Dólar', 'EUR/USD': 'Euro', 'BTC/USD': 'Bitcoin', 'ETH/USD': 'Ethereum' };
+    const quoteUnit = (par) => par.split('/')[1];
+    const formatPrice = (value, par) => `${Number(value).toLocaleString('es-PE', { maximumFractionDigits: 6 })} ${quoteUnit(par)}`;
+    let selectedPair = 'USD/PEN';
+    let chooseInitialChart = !isAdmin;
     const refreshButton = document.getElementById('forecastRefresh');
+    const autoRefreshToggle = document.getElementById('forecastAutoRefresh');
+    let autoRefreshTimer = null;
     const updated = document.getElementById('forecastUpdated');
     const methodSelect = document.getElementById('forecastMethod');
-    let selectedMethod = 'lineal';
+    const allowedMethods = ['lineal', 'logaritmica', 'holt', 'arima', 'boosting'];
+    let selectedMethod = isAdmin ? 'lineal' : 'auto';
     const methodLabels = { lineal: 'Regresión lineal', logaritmica: 'Regresión logarítmica', holt: 'Holt amortiguado' };
     const methodDescriptions = {
         lineal: 'Ajusta una recta a los cierres según su fecha: precio(t) = a + b × t. Cada día futuro se evalúa sobre esa recta.',
@@ -32,26 +40,13 @@ document.addEventListener('DOMContentLoaded', () => {
         holt: 'Suaviza nivel y tendencia; reduce la pendiente futura con amortiguación. Parámetros fijos: α = 0,4; β = 0,2; φ = 0,9. Los días sin registros mantienen el cierre anterior para el cálculo.'
     };
     Object.assign(methodLabels, {
-        boosting: 'LightGBM / XGBoost',
-        cnn_lstm: 'CNN-LSTM',
-        gru: 'GRU / CNN-GRU',
-        ensemble: 'XGBoost + LSTM/GRU ensemble',
-        tcn: 'TCN',
-        transformers: 'Transformers',
-        random_forest: 'Random Forest',
-        arima: 'ARIMA / regresión tradicional'
+        boosting: 'XGBoost',
+        arima: 'ARIMA (1,1,0)'
     });
     Object.assign(methodDescriptions, {
-        boosting: 'Árboles con boosting para combinar indicadores, volumen y otras variables. No modela secuencias de forma natural.',
-        cnn_lstm: 'Combina patrones locales de una CNN con patrones temporales de una LSTM. Su complejidad exige controlar el sobreajuste.',
-        gru: 'Redes recurrentes GRU, con una CNN opcional para patrones locales. Requiere suficientes datos para entrenar y validar.',
-        ensemble: 'Combina las salidas de XGBoost y una LSTM o GRU. Requiere entrenar y validar tanto los modelos individuales como su combinación.',
-        tcn: 'Red convolucional temporal para analizar secuencias. Su implementación requiere entrenamiento y validación específicos.',
-        transformers: 'Modelos de atención para analizar secuencias. Requieren datasets amplios; su arquitectura no garantiza mejores resultados.',
-        random_forest: 'Combina múltiples árboles de decisión como referencia para comparar modelos. Requiere entrenamiento y validación con datos históricos.',
-        arima: 'ARIMA es un modelo estadístico de series temporales, pendiente de implementación. La regresión tradicional ya está disponible como regresión lineal y logarítmica.'
+        boosting: 'XGBoost combina árboles de decisión que corrigen los errores anteriores. XGBRegressor aprende retornos a partir de precios históricos, medias, volatilidad y horizonte; utiliza hasta 500 cierres reales por activo. Se valida sobre los últimos 21 orígenes sin incorporar datos futuros a cada ajuste y estima precios a 7 días. Las probabilidades de subida y bajada se calculan con sus errores históricos.',
+        arima: 'ARIMA (1,1,0) con deriva: aplica una diferencia diaria y ajusta un componente autorregresivo por mínimos cuadrados condicionales. El orden es fijo y no incluye componente de medias móviles (q=0). Los días sin cierres conservan el último precio para el cálculo; no son observaciones nuevas. Se compara su error en ventanas de 30, 60 y 120 cierres.'
     });
-    const pendingModelMessage = ' Pendiente de implementación: este modelo todavía no genera predicciones en la aplicación.';
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
     const forecastState = {
         soundEnabled: false,
@@ -145,8 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadForecasts() {
         if (loading || syncingHistory) return;
         loading = true;
-        syncButton.disabled = true;
-        methodSelect.disabled = true;
+        if (syncButton) syncButton.disabled = true;
+        if (methodSelect) methodSelect.disabled = true;
         refreshButton.disabled = true;
         refreshButton.textContent = 'Actualizando…';
         forecastList.setAttribute('aria-busy', 'true');
@@ -158,29 +153,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (!response.ok || !Array.isArray(data)) {
-                throw new Error('No se pudieron cargar los pronósticos.');
+                throw new Error(data?.error || data?.mensaje || 'No se pudieron cargar los pronósticos.');
             }
 
             itemsCache = data.filter((item) => allowedPairs.includes(item.par));
+            if (chooseInitialChart && itemsCache.length) {
+                selectedPair = [...itemsCache].sort((a, b) => b.cambio_estimado - a.cambio_estimado)[0].par;
+                chooseInitialChart = false;
+            }
             renderForecasts(itemsCache);
             updated.textContent = `Última consulta: ${new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })} · Actualización cada 70 s`;
             announceNewForecasts(itemsCache);
         } catch (error) {
-            updated.textContent = 'No se pudo actualizar. Pulsa Actualizar para reintentar.';
+            updated.textContent = `${error.message || 'No se pudo actualizar.'} Pulsa Actualizar para reintentar.`;
             itemsCache = [];
-            forecastTopConfianza.textContent = '--';
-            forecastVolatilityAvg.textContent = '--';
-            document.getElementById('forecastTopAsset').textContent = 'Sin datos disponibles';
-            if (forecastList) {
-                forecastList.innerHTML = '<div class="empty-state">No hay pronósticos disponibles en este momento.</div>';
-            }
-            if (forecastSignals) {
-                forecastSignals.innerHTML = '<div class="empty-state">Sin señales calculadas.</div>';
-            }
+            renderForecasts([]);
         } finally {
             loading = false;
-            syncButton.disabled = false;
-            methodSelect.disabled = false;
+            if (syncButton) syncButton.disabled = false;
+            if (methodSelect) methodSelect.disabled = false;
             refreshButton.disabled = false;
             refreshButton.textContent = '↻ Actualizar';
             forecastList.setAttribute('aria-busy', 'false');
@@ -188,7 +179,39 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function renderProbabilities(item) {
+        const probabilities = item?.probabilidades;
+        const available = probabilities && Number.isFinite(probabilities.subida) && Number.isFinite(probabilities.bajada);
+        return `<div class="forecast-probabilities" aria-label="Probabilidades estimadas a siete días">
+            <div class="forecast-probability probability-up"><span>↗ Prob. de subida</span><strong>${available ? probabilities.subida.toFixed(1) + '%' : '--'}</strong></div>
+            <div class="forecast-probability probability-down"><span>↘ Prob. de bajada</span><strong>${available ? probabilities.bajada.toFixed(1) + '%' : '--'}</strong></div>
+        </div>${available ? '' : '<small>Histórico insuficiente para estimar probabilidades.</small>'}`;
+    }
+
     function renderForecasts(items) {
+        if (!isAdmin) {
+            const best = [...items].sort((a, b) => b.cambio_estimado - a.cambio_estimado)[0];
+            const decision = document.getElementById('forecastDecision');
+            decision.textContent = !best ? 'Sin predicciones disponibles para comparar.' : best.cambio_estimado > 0
+                ? `Mayor subida estimada: ${assetNames[best.par]} (${best.par}), +${Number(best.cambio_estimado).toFixed(2)}% a 7 días.`
+                : 'Ningún activo presenta una subida estimada a 7 días.';
+            forecastList.innerHTML = allowedPairs.map((par) => {
+                const item = items.find((candidate) => candidate.par === par);
+                if (!item) return `<article class="forecast-item"><strong>${assetNames[par]} · ${par}</strong>${renderProbabilities(null)}<small>Sin predicción disponible.</small></article>`;
+                if (trendFilter !== 'all' && item.tendencia !== trendFilter) return '';
+                const change = Number(item.cambio_estimado);
+                return `<article class="forecast-item ${change >= 0 ? 'up' : 'down'}">
+                    <div class="forecast-meta"><span>${assetNames[par]} · ${par}</span><strong>${change > 0 ? '+' : ''}${change.toFixed(2)}%</strong></div>
+                    ${renderProbabilities(item)}
+                    <small>${change > 0 ? '↗ Subida estimada' : change < 0 ? '↘ Bajada estimada' : 'Sin cambio estimado'} a 7 días</small>
+                    <small>Último cierre: ${formatPrice(item.precio_actual, par)}</small>
+                    <small>Precio previsto: ${formatPrice(item.precio_estimado, par)}</small>
+                    ${best === item && change > 0 ? '<strong class="forecast-best">Mayor subida estimada</strong>' : ''}
+                    <button type="button" class="forecast-history-link" data-history="${par}">Ver gráfico <span aria-hidden="true">→</span></button>
+                </article>`;
+            }).join('') || '<div class="empty-state">No hay escenarios con esta tendencia.</div>';
+            return;
+        }
         if (!items.length) {
             if (forecastList) forecastList.innerHTML = '<div class="empty-state">No hay pronósticos disponibles.</div>';
             forecastSignals.innerHTML = '<div class="empty-state">Sin señales calculadas.</div>';
@@ -225,6 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <small>${item.tendencia === 'alcista' ? '↗ Alcista' : '↘ Bajista'} · Escenario a 7 días</small>
                         <small>${escapeHtml(item.mensaje)}</small>
+                        ${renderProbabilities(item)}
                         <div class="forecast-confidence"><label for="confidence-${index}">Puntuación orientativa ${Number(item.confianza).toFixed(1)}/100</label><progress id="confidence-${index}" max="100" value="${Math.max(0, Math.min(100, Number(item.confianza) || 0))}"></progress></div>
                         <button type="button" class="forecast-history-link" data-history="${escapeHtml(item.par)}">Ver predicción <span aria-hidden="true">→</span></button>
                     </article>
@@ -254,14 +278,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const request = ++historyRequest;
         if (historyChart) { historyChart.destroy(); historyChart = null; }
         historyChange.textContent = '--';
-        document.getElementById('forecastModelDetails').textContent = '';
+        const modelDetails = document.getElementById('forecastModelDetails');
+        if (modelDetails) modelDetails.textContent = '';
         historyMeta.textContent = 'Proyección a 7 días';
 
         historyButtons.forEach((button) => {
             button.classList.toggle('active', button.dataset.par === par);
             button.setAttribute('aria-pressed', String(button.dataset.par === par));
         });
-        historyTitle.textContent = par;
+        historyTitle.textContent = `${assetNames[par]} · ${par}`;
+        const unit = quoteUnit(par);
+        document.getElementById('forecastPriceUnit').textContent = `Precio en ${unit} · Cambio estimado a 7 días`;
         historyStatus.textContent = 'Cargando histórico...';
         historyStatus.style.display = 'block';
 
@@ -289,7 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const pastStart = present - 7 * day;
             // Do not join a forecast based on a different close to this history.
             const hasProjection = forecast && Number.isFinite(Number(forecast.precio_estimado))
-                && forecast.metodo === selectedMethod
+                && (selectedMethod === 'auto' || forecast.metodo === selectedMethod)
                 && String(forecast.fecha_base).slice(0, 10) === rows[rows.length - 1].fecha.slice(0, 10)
                 && Array.isArray(forecast.proyeccion) && forecast.proyeccion.length === 7
                 && Number(forecast.precio_estimado) > 0
@@ -305,21 +332,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const validation = forecast?.validacion;
             const details = document.getElementById('forecastModelDetails');
             const priceFormat = (value) => Number(value).toLocaleString('es-PE', { maximumFractionDigits: 6 });
-            details.innerHTML = hasProjection ? `
+            if (details) details.innerHTML = hasProjection ? `
                 <div><span>Cierres utilizados</span><strong>${Number(forecast.observaciones)} / ventana ${Number(validation?.ventana || 120)}</strong></div>
                 <div><span>Error histórico (MAPE)</span><strong>${validation?.error_mape != null ? Number(validation.error_mape).toFixed(2) + '%' : 'Sin evaluación suficiente'}</strong></div>
                 <div><span>Error manteniendo el último cierre</span><strong>${validation?.error_base != null ? Number(validation.error_base).toFixed(2) + '%' : '--'}</strong></div>
                 <div><span>Comparaciones de validación</span><strong>${Number(validation?.evaluaciones || 0)}</strong></div>
-                <div><span>Último cierre / objetivo a 7 días</span><strong>${priceFormat(last)} / ${priceFormat(target)} USD</strong></div>
-                <div><span>Medias de 7 / 30 cierres</span><strong>${priceFormat(forecast.media_corta)} / ${priceFormat(forecast.media_larga)} USD</strong></div>
+                <div><span>Último cierre / objetivo a 7 días</span><strong>${priceFormat(last)} / ${priceFormat(target)} ${unit}</strong></div>
+                <div><span>Medias de 7 / 30 cierres</span><strong>${priceFormat(forecast.media_corta)} / ${priceFormat(forecast.media_larga)} ${unit}</strong></div>
             ` : '<p>Actualiza los pronósticos para consultar los detalles del modelo.</p>';
             const formatDate = (value) => new Date(value).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', timeZone: 'UTC' });
             historyChange.textContent = hasProjection ? `${variation >= 0 ? '+' : ''}${variation.toFixed(2)}% estimado` : 'Sin predicción';
             historyChange.className = hasProjection ? (variation >= 0 ? 'text-up' : 'text-down') : '';
             historyMeta.textContent = `Hoy: ${presentDate} · Último cierre: ${rows[rows.length - 1].fecha}`;
-            historyStatus.textContent = hasProjection ? (stale ? `Último cierre confirmado: ${formatDate(lastClose)} (${last.toLocaleString('es-PE', { maximumFractionDigits: 6 })} USD). No hay cierres posteriores guardados; hoy aún no se incorpora como cierre definitivo. La predicción empieza el ${formatDate(projection[0].x)} y no completa el histórico.` : '') : 'No hay una predicción disponible para este cierre. Puedes actualizar para reintentar.';
+            historyStatus.textContent = hasProjection ? (stale ? `Último cierre confirmado: ${formatDate(lastClose)} (${last.toLocaleString('es-PE', { maximumFractionDigits: 6 })} ${unit}). No hay cierres posteriores guardados; hoy aún no se incorpora como cierre definitivo. La predicción empieza el ${formatDate(projection[0].x)} y no completa el histórico.` : '') : 'No hay una predicción disponible para este cierre. Puedes actualizar para reintentar.';
             historyStatus.style.display = !hasProjection || stale ? 'block' : 'none';
-            historyCanvas.setAttribute('aria-label', `${par}: histórico hasta ${rows[rows.length - 1].fecha}. ${hasProjection ? `Precio estimado a siete días: ${target} USD.` : 'Sin predicción disponible.'}`);
+            if (!isAdmin && hasProjection) {
+                historyStatus.textContent = `Último cierre: ${formatPrice(last, par)} · Previsto a 7 días: ${formatPrice(target, par)}.${stale ? ' El tramo amarillo es estimado; faltan cierres confirmados.' : ''}`;
+                historyStatus.style.display = 'block';
+            }
+            historyCanvas.setAttribute('aria-label', `${par}: histórico hasta ${rows[rows.length - 1].fecha}. ${hasProjection ? `Precio estimado a siete días: ${target} ${unit}.` : 'Sin predicción disponible.'}`);
             historyChart = new Chart(historyCanvas, {
                 type: 'line',
                 plugins: [{
@@ -383,24 +414,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 }],
                 data: {
                     datasets: [{
-                        label: 'Histórico (USD)',
+                        label: `Histórico (${unit})`,
                         data: historicalPoints,
                         borderColor: '#74a7ff',
                         backgroundColor: 'rgba(116, 167, 255, 0.12)',
                         borderWidth: 2.5,
                         tension: 0,
-                        pointRadius: 1.5,
-                        pointHoverRadius: 5,
+                        pointRadius: 3,
+                        pointHoverRadius: 8,
+                        pointHitRadius: 12,
                         fill: true
                     }, {
-                        label: `${methodLabels[selectedMethod]} (USD)`,
+                        label: `${isAdmin ? methodLabels[forecast?.metodo || selectedMethod] : 'Predicción'} (${unit})`,
                         data: bridge.length ? [bridge[1], ...projection] : projection,
                         borderColor: '#c4a1ff',
                         borderDash: [7, 5],
                         borderWidth: 3,
                         tension: 0,
-                        pointRadius: 3,
-                        pointHoverRadius: 6,
+                        pointRadius: 4,
+                        pointHoverRadius: 9,
+                        pointHitRadius: 14,
                         fill: false
                     }, {
                         label: 'Conexión estimada (sin cierres confirmados)',
@@ -418,10 +451,37 @@ document.addEventListener('DOMContentLoaded', () => {
                     maintainAspectRatio: false,
                     layout: { padding: { top: 32 } },
                     interaction: { mode: 'nearest', axis: 'x', intersect: false },
-                    plugins: { legend: { display: false }, tooltip: { callbacks: {
-                        title: (points) => points.length ? formatDate(points[0].parsed.x) : '',
-                        label: (context) => `${context.dataset.label}: ${context.parsed.y.toLocaleString('es-PE', { maximumFractionDigits: 6 })}`
-                    } } },
+                    plugins: { legend: { display: false }, tooltip: {
+                        backgroundColor: '#101f33',
+                        titleColor: '#fff', bodyColor: '#f7fbff', footerColor: '#b8c9dd',
+                        borderColor: '#74a7ff', borderWidth: 1,
+                        padding: 18, cornerRadius: 12, caretSize: 9,
+                        titleFont: { size: 17, weight: 'bold' },
+                        bodyFont: { size: window.innerWidth < 600 ? 15 : 18, lineHeight: 1.5 },
+                        footerFont: { size: 12 },
+                        titleMarginBottom: 12, bodySpacing: 8, footerMarginTop: 12,
+                        displayColors: false,
+                        callbacks: {
+                            title: (points) => points.length ? `${assetNames[par]} · ${new Date(points[0].parsed.x).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })}` : '',
+                            label: (context) => {
+                                const label = context.datasetIndex === 0 ? 'Cierre registrado' : context.datasetIndex === 1 ? 'Precio pronosticado' : 'Conexión estimada';
+                                return `${label}: ${formatPrice(context.parsed.y, par)}`;
+                            },
+                            afterBody: () => {
+                                if (!hasProjection) return ['Sin pronóstico disponible.'];
+                                const probabilities = forecast.probabilidades;
+                                const available = Number.isFinite(probabilities?.subida) && Number.isFinite(probabilities?.bajada);
+                                return [
+                                    `Objetivo a 7 días: ${formatPrice(target, par)}`,
+                                    `Cambio a 7 días: ${variation >= 0 ? '+' : ''}${variation.toFixed(2)}%`,
+                                    'Probabilidades al objetivo de 7 días:',
+                                    available ? `↑ Subida: ${probabilities.subida.toFixed(1)}%` : '↑ Subida: sin datos suficientes',
+                                    available ? `↓ Bajada: ${probabilities.bajada.toFixed(1)}%` : '↓ Bajada: sin datos suficientes'
+                                ];
+                            },
+                            footer: () => 'Estimaciones; no garantizan resultados.'
+                        }
+                    } },
                     scales: {
                         x: { type: 'linear', min: pastStart, max: present + 7 * day,
                             afterBuildTicks: (scale) => {
@@ -443,18 +503,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     loadForecasts();
-    methodSelect.addEventListener('click', (event) => {
-        const help = event.target.closest('[data-method-help], [data-method-unavailable]');
+    methodSelect?.addEventListener('click', (event) => {
+        const help = event.target.closest('[data-method-help]');
         if (help) {
-            const method = help.dataset.methodHelp || help.dataset.methodUnavailable;
-            const pending = methodSelect.querySelector(`[data-method-unavailable="${method}"]`) !== null;
+            const method = help.dataset.methodHelp;
+            if (!allowedMethods.includes(method)) return;
             document.getElementById('forecastModelDialogTitle').textContent = methodLabels[method];
-            document.getElementById('forecastModelDialogText').textContent = methodDescriptions[method] + (pending ? pendingModelMessage : '');
+            document.getElementById('forecastModelDialogText').textContent = methodDescriptions[method];
             document.getElementById('forecastModelDialog').showModal();
             return;
         }
         const button = event.target.closest('[data-method]');
-        if (!button || loading || syncingHistory || selectedMethod === button.dataset.method) return;
+        if (!button || !allowedMethods.includes(button.dataset.method) || loading || syncingHistory || selectedMethod === button.dataset.method) return;
         selectedMethod = button.dataset.method;
         methodSelect.querySelectorAll('[data-method]').forEach((item) => {
             item.classList.toggle('active', item === button);
@@ -473,12 +533,12 @@ document.addEventListener('DOMContentLoaded', () => {
         loadForecasts();
     });
     refreshButton.addEventListener('click', loadForecasts);
-    syncButton.addEventListener('click', async () => {
+    syncButton?.addEventListener('click', async () => {
         if (syncingHistory || loading) return;
         syncingHistory = true;
-        syncButton.disabled = true;
+        if (syncButton) syncButton.disabled = true;
         refreshButton.disabled = true;
-        methodSelect.disabled = true;
+        if (methodSelect) methodSelect.disabled = true;
         syncStatus.hidden = false;
         const messages = [];
         try {
@@ -501,9 +561,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             syncingHistory = false;
             syncButton.textContent = '↻ Actualizar histórico';
-            syncButton.disabled = false;
+            if (syncButton) syncButton.disabled = false;
             refreshButton.disabled = false;
-            methodSelect.disabled = false;
+            if (methodSelect) methodSelect.disabled = false;
             syncStatus.textContent = messages.join(' · ');
             await loadForecasts();
         }
@@ -547,5 +607,15 @@ document.addEventListener('DOMContentLoaded', () => {
     historyButtons.forEach((button) => {
         button.addEventListener('click', () => loadHistory(button.dataset.par));
     });
-    window.setInterval(loadForecasts, 70000);
+    function configureAutoRefresh() {
+        if (autoRefreshTimer !== null) {
+            window.clearInterval(autoRefreshTimer);
+            autoRefreshTimer = null;
+        }
+        if (autoRefreshToggle?.checked) {
+            autoRefreshTimer = window.setInterval(loadForecasts, 70000);
+        }
+    }
+    autoRefreshToggle?.addEventListener('change', configureAutoRefresh);
+    configureAutoRefresh();
 });

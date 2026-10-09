@@ -8,3 +8,134 @@ USDT/USD: {"par":"USDT\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_
 BNB/USD: {"par":"BNB\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299208}
 SOL/USD: {"par":"SOL\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299724}
 [2026-10-06 10:16:33] Fin de actualizaciÃ³n; cÃ³digo 0
+[2026-10-06 11:06:32] Inicio de actualizacion
+EUR/USD: {"par":"EUR\/USD","registros":180,"ultima_fecha":"2026-10-04","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299205}
+USD/PEN: {"par":"USD\/PEN","registros":180,"ultima_fecha":"2026-10-04","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"pendiente","dia":"2026-10-06","intento":1791299792,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+JPY/USD: {"par":"JPY\/USD","registros":180,"ultima_fecha":"2026-10-04","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"pendiente","dia":"2026-10-06","intento":1791299723,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+BTC/USD: {"par":"BTC\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299206}
+ETH/USD: {"par":"ETH\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299207}
+USDT/USD: {"par":"USDT\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299207}
+BNB/USD: {"par":"BNB\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299208}
+SOL/USD: {"par":"SOL\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299724}
+[2026-10-06 11:06:32] Fin de actualizacion; codigo 0
+[2026-10-06 12:06:33] Inicio de actualizacion
+EUR/USD: {"par":"EUR\/USD","registros":180,"ultima_fecha":"2026-10-04","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"pendiente","dia":"2026-10-06","intento":1791306396,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+USD/PEN: {"par":"USD\/PEN","registros":180,"ultima_fecha":"2026-10-04","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"pendiente","dia":"2026-10-06","intento":1791306397,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+JPY/USD: {"par":"JPY\/USD","registros":180,"ultima_fecha":"2026-10-04","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"pendiente","dia":"2026-10-06","intento":1791306399,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+BTC/USD: {"par":"BTC\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299206}
+ETH/USD: {"par":"ETH\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299207}
+USDT/USD: {"par":"USDT\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299207}
+BNB/USD: {"par":"BNB\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299208}
+SOL/USD: {"par":"SOL\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299724}
+[2026-10-06 12:06:39] Fin de actualizacion; codigo 0
+[2026-10-06 13:06:32] Inicio de actualizacion
+EUR/USD: {"par":"EUR\/USD","registros":180,"ultima_fecha":"2026-10-04","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"pendiente","dia":"2026-10-06","intento":1791306396,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+USD/PEN: {"par":"USD\/PEN","registros":180,"ultima_fecha":"2026-10-04","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"pendiente","dia":"2026-10-06","intento":1791306397,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+JPY/USD: {"par":"JPY\/USD","registros":180,"ultima_fecha":"2026-10-04","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"pendiente","dia":"2026-10-06","intento":1791306399,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+BTC/USD: {"par":"BTC\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299206}
+ETH/USD: {"par":"ETH\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299207}
+USDT/USD: {"par":"USDT\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299207}
+BNB/USD: {"par":"BNB\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299208}
+SOL/USD: {"par":"SOL\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299724}
+[2026-10-06 13:06:32] Fin de actualizacion; codigo 0
+[2026-10-06 14:06:32] Inicio de actualizacion
+No se pudo actualizar el histórico: SQLSTATE[HY000] [2002] No se puede establecer una conexión ya que el equipo de destino denegó expresamente dicha conexión
+[2026-10-06 14:06:36] Fin de actualizacion; codigo 1
+[2026-10-06 15:06:33] Inicio de actualizacion
+No se pudo actualizar el histórico: SQLSTATE[HY000] [2002] No se puede establecer una conexión ya que el equipo de destino denegó expresamente dicha conexión
+[2026-10-06 15:06:38] Fin de actualizacion; codigo 1
+[2026-10-06 16:06:32] Inicio de actualizacion
+EUR/USD: {"par":"EUR\/USD","registros":180,"ultima_fecha":"2026-10-04","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"pendiente","dia":"2026-10-06","intento":1791320793,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+USD/PEN: {"par":"USD\/PEN","registros":179,"ultima_fecha":"2026-10-04","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"pendiente","dia":"2026-10-06","intento":1791320794,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+JPY/USD: {"par":"JPY\/USD","registros":180,"ultima_fecha":"2026-10-04","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"pendiente","dia":"2026-10-06","intento":1791320794,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+BTC/USD: {"par":"BTC\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299206}
+ETH/USD: {"par":"ETH\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299207}
+USDT/USD: {"par":"USDT\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299207}
+BNB/USD: {"par":"BNB\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299208}
+SOL/USD: {"par":"SOL\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-05","proveedor":"twelve","estado":"ok","dia":"2026-10-06","intento":1791299724}
+[2026-10-06 16:06:34] Fin de actualizacion; codigo 0
+[2026-10-06 17:06:33] Inicio de actualizacion
+[2026-10-07 09:17:30] Inicio de actualizacion
+No se pudo actualizar el histórico: SQLSTATE[HY000] [2002] No se puede establecer una conexión ya que el equipo de destino denegó expresamente dicha conexión
+[2026-10-07 09:17:34] Fin de actualizacion; codigo 1
+[2026-10-07 10:06:32] Inicio de actualizacion
+EUR/USD: {"par":"EUR\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"pendiente","dia":"2026-10-07","intento":1791385183,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+USD/PEN: {"par":"USD\/PEN","registros":179,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"pendiente","dia":"2026-10-07","intento":1791385191,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+JPY/USD: {"par":"JPY\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"pendiente","dia":"2026-10-07","intento":1791385594,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+BTC/USD: {"par":"BTC\/USD","registros":180,"ultima_fecha":"2026-10-06","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"ok","dia":"2026-10-07","intento":1791385595}
+ETH/USD: {"par":"ETH\/USD","registros":180,"ultima_fecha":"2026-10-06","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"ok","dia":"2026-10-07","intento":1791385597}
+USDT/USD: {"par":"USDT\/USD","registros":180,"ultima_fecha":"2026-10-06","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"ok","dia":"2026-10-07","intento":1791385599}
+BNB/USD: {"par":"BNB\/USD","registros":180,"ultima_fecha":"2026-10-06","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"ok","dia":"2026-10-07","intento":1791385601}
+SOL/USD: {"par":"SOL\/USD","registros":180,"ultima_fecha":"2026-10-06","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"ok","dia":"2026-10-07","intento":1791385604}
+[2026-10-07 10:06:44] Fin de actualizacion; codigo 0
+[2026-10-07 11:06:31] Inicio de actualizacion
+EUR/USD: {"par":"EUR\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"pendiente","dia":"2026-10-07","intento":1791389193,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+USD/PEN: {"par":"USD\/PEN","registros":179,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"pendiente","dia":"2026-10-07","intento":1791389194,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+JPY/USD: {"par":"JPY\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"pendiente","dia":"2026-10-07","intento":1791389195,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+BTC/USD: {"par":"BTC\/USD","registros":180,"ultima_fecha":"2026-10-06","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"ok","dia":"2026-10-07","intento":1791385595}
+ETH/USD: {"par":"ETH\/USD","registros":180,"ultima_fecha":"2026-10-06","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"ok","dia":"2026-10-07","intento":1791385597}
+USDT/USD: {"par":"USDT\/USD","registros":180,"ultima_fecha":"2026-10-06","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"ok","dia":"2026-10-07","intento":1791385599}
+BNB/USD: {"par":"BNB\/USD","registros":180,"ultima_fecha":"2026-10-06","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"ok","dia":"2026-10-07","intento":1791385601}
+SOL/USD: {"par":"SOL\/USD","registros":180,"ultima_fecha":"2026-10-06","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"ok","dia":"2026-10-07","intento":1791385604}
+[2026-10-07 11:06:35] Fin de actualizacion; codigo 0
+[2026-10-07 12:06:40] Inicio de actualizacion
+EUR/USD: {"par":"EUR\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"pendiente","dia":"2026-10-07","intento":1791392802,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+USD/PEN: {"par":"USD\/PEN","registros":179,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"pendiente","dia":"2026-10-07","intento":1791392802,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+JPY/USD: {"par":"JPY\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"pendiente","dia":"2026-10-07","intento":1791392803,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+BTC/USD: {"par":"BTC\/USD","registros":180,"ultima_fecha":"2026-10-06","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"ok","dia":"2026-10-07","intento":1791385595}
+ETH/USD: {"par":"ETH\/USD","registros":180,"ultima_fecha":"2026-10-06","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"ok","dia":"2026-10-07","intento":1791385597}
+USDT/USD: {"par":"USDT\/USD","registros":180,"ultima_fecha":"2026-10-06","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"ok","dia":"2026-10-07","intento":1791385599}
+BNB/USD: {"par":"BNB\/USD","registros":180,"ultima_fecha":"2026-10-06","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"ok","dia":"2026-10-07","intento":1791385601}
+SOL/USD: {"par":"SOL\/USD","registros":180,"ultima_fecha":"2026-10-06","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"ok","dia":"2026-10-07","intento":1791385604}
+[2026-10-07 12:06:43] Fin de actualizacion; codigo 0
+[2026-10-07 13:06:31] Inicio de actualizacion
+EUR/USD: {"par":"EUR\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"pendiente","dia":"2026-10-07","intento":1791392802,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+USD/PEN: {"par":"USD\/PEN","registros":179,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"pendiente","dia":"2026-10-07","intento":1791392802,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+JPY/USD: {"par":"JPY\/USD","registros":180,"ultima_fecha":"2026-10-05","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"pendiente","dia":"2026-10-07","intento":1791392803,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+BTC/USD: {"par":"BTC\/USD","registros":180,"ultima_fecha":"2026-10-06","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"ok","dia":"2026-10-07","intento":1791385595}
+ETH/USD: {"par":"ETH\/USD","registros":180,"ultima_fecha":"2026-10-06","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"ok","dia":"2026-10-07","intento":1791385597}
+USDT/USD: {"par":"USDT\/USD","registros":180,"ultima_fecha":"2026-10-06","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"ok","dia":"2026-10-07","intento":1791385599}
+BNB/USD: {"par":"BNB\/USD","registros":180,"ultima_fecha":"2026-10-06","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"ok","dia":"2026-10-07","intento":1791385601}
+SOL/USD: {"par":"SOL\/USD","registros":180,"ultima_fecha":"2026-10-06","hasta_solicitado":"2026-10-06","proveedor":"twelve","estado":"ok","dia":"2026-10-07","intento":1791385604}
+[2026-10-07 13:06:31] Fin de actualizacion; codigo 0
+[2026-10-07 20:10:34] Inicio de actualizacion
+No se pudo actualizar el histórico: SQLSTATE[HY000] [2002] No se puede establecer una conexión ya que el equipo de destino denegó expresamente dicha conexión
+[2026-10-07 20:10:40] Fin de actualizacion; codigo 1
+[2026-10-07 21:06:34] Inicio de actualizacion
+No se pudo actualizar el histórico: SQLSTATE[HY000] [2002] No se puede establecer una conexión ya que el equipo de destino denegó expresamente dicha conexión
+[2026-10-07 21:06:39] Fin de actualizacion; codigo 1
+[2026-10-09 09:26:38] Inicio de actualizacion
+[2026-10-09 10:06:32] Inicio de actualizacion
+EUR/USD: {"par":"EUR\/USD","registros":180,"ultima_fecha":"2026-10-07","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"pendiente","dia":"2026-10-09","intento":1791558393,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+USD/PEN: {"par":"USD\/PEN","registros":179,"ultima_fecha":"2026-10-07","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"pendiente","dia":"2026-10-09","intento":1791557555,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+JPY/USD: {"par":"JPY\/USD","registros":180,"ultima_fecha":"2026-10-07","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"pendiente","dia":"2026-10-09","intento":1791558394,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+BTC/USD: {"par":"BTC\/USD","registros":180,"ultima_fecha":"2026-10-08","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"ok","dia":"2026-10-09","intento":1791558395}
+ETH/USD: {"par":"ETH\/USD","registros":180,"ultima_fecha":"2026-10-08","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"ok","dia":"2026-10-09","intento":1791558396}
+USDT/USD: {"par":"USDT\/USD","registros":180,"ultima_fecha":"2026-10-08","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"ok","dia":"2026-10-09","intento":1791558398}
+BNB/USD: {"par":"BNB\/USD","registros":180,"ultima_fecha":"2026-10-08","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"ok","dia":"2026-10-09","intento":1791558399}
+SOL/USD: {"par":"SOL\/USD","registros":180,"ultima_fecha":"2026-10-08","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"ok","dia":"2026-10-09","intento":1791558400}
+[2026-10-09 10:06:40] Fin de actualizacion; codigo 0
+[2026-10-09 11:06:31] Inicio de actualizacion
+EUR/USD: {"par":"EUR\/USD","registros":180,"ultima_fecha":"2026-10-07","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"pendiente","dia":"2026-10-09","intento":1791558393,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+USD/PEN: {"par":"USD\/PEN","registros":179,"ultima_fecha":"2026-10-07","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"pendiente","dia":"2026-10-09","intento":1791561974,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+JPY/USD: {"par":"JPY\/USD","registros":180,"ultima_fecha":"2026-10-07","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"pendiente","dia":"2026-10-09","intento":1791558394,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+BTC/USD: {"par":"BTC\/USD","registros":180,"ultima_fecha":"2026-10-08","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"ok","dia":"2026-10-09","intento":1791559134}
+ETH/USD: {"par":"ETH\/USD","registros":180,"ultima_fecha":"2026-10-08","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"ok","dia":"2026-10-09","intento":1791559136}
+USDT/USD: {"par":"USDT\/USD","registros":180,"ultima_fecha":"2026-10-08","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"ok","dia":"2026-10-09","intento":1791559137}
+BNB/USD: {"par":"BNB\/USD","registros":180,"ultima_fecha":"2026-10-08","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"ok","dia":"2026-10-09","intento":1791559138}
+SOL/USD: {"par":"SOL\/USD","registros":180,"ultima_fecha":"2026-10-08","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"ok","dia":"2026-10-09","intento":1791558400}
+[2026-10-09 11:06:32] Fin de actualizacion; codigo 0
+[2026-10-09 12:06:32] Inicio de actualizacion
+EUR/USD: {"par":"EUR\/USD","registros":180,"ultima_fecha":"2026-10-07","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"pendiente","dia":"2026-10-09","intento":1791564093,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+USD/PEN: {"par":"USD\/PEN","registros":179,"ultima_fecha":"2026-10-07","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"pendiente","dia":"2026-10-09","intento":1791565593,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+JPY/USD: {"par":"JPY\/USD","registros":180,"ultima_fecha":"2026-10-07","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"pendiente","dia":"2026-10-09","intento":1791562003,"mensaje":"El proveedor todavía no publicó todos los cierres esperados. Se reintentará automáticamente."}
+BTC/USD: {"par":"BTC\/USD","registros":180,"ultima_fecha":"2026-10-08","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"ok","dia":"2026-10-09","intento":1791559134}
+ETH/USD: {"par":"ETH\/USD","registros":180,"ultima_fecha":"2026-10-08","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"ok","dia":"2026-10-09","intento":1791559136}
+USDT/USD: {"par":"USDT\/USD","registros":180,"ultima_fecha":"2026-10-08","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"ok","dia":"2026-10-09","intento":1791559137}
+BNB/USD: {"par":"BNB\/USD","registros":180,"ultima_fecha":"2026-10-08","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"ok","dia":"2026-10-09","intento":1791559138}
+SOL/USD: {"par":"SOL\/USD","registros":180,"ultima_fecha":"2026-10-08","hasta_solicitado":"2026-10-08","proveedor":"twelve","estado":"ok","dia":"2026-10-09","intento":1791558400}
+[2026-10-09 12:06:33] Fin de actualizacion; codigo 0
+[2026-10-09 13:06:31] Inicio de actualizacion
+[2026-10-09 14:06:31] Inicio de actualizacion
+No se pudo actualizar el histórico: SQLSTATE[HY000] [2002] No se puede establecer una conexión ya que el equipo de destino denegó expresamente dicha conexión
+[2026-10-09 14:06:36] Fin de actualizacion; codigo 1

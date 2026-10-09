@@ -1,4 +1,5 @@
 <?php
+$canOverview = Access::permite('dashboard');
 require __DIR__ . '/../layouts/header.php';
 require __DIR__ . '/../layouts/navbar.php';
 ?>
@@ -27,7 +28,9 @@ require __DIR__ . '/../layouts/navbar.php';
         </section>
 
         <div class="home-toolbar">
+            <?php if (Access::permite('dashboard')): ?>
             <a class="btn primary" href="<?= BASE_URL ?>dashboard"><span aria-hidden="true">↗</span> Abrir overview</a>
+            <?php endif; ?>
             <a class="btn secondary" href="<?= BASE_URL ?>mercado">Ver mercado</a>
         </div>
 
@@ -41,10 +44,14 @@ require __DIR__ . '/../layouts/navbar.php';
             </div>
 
             <div class="home-tools">
-                <a class="home-tool home-tool-featured" href="<?= BASE_URL ?>dashboard">
+                <a class="home-tool home-tool-featured<?= $canOverview ? '' : ' home-tool-locked' ?>" href="<?= BASE_URL ?><?= $canOverview ? 'dashboard' : 'login?restringido=1' ?>"<?= $canOverview ? '' : ' aria-label="Overview: inicia sesión o crea una cuenta para acceder"' ?>>
                     <span class="home-tool-number">01</span>
-                    <div><strong>Overview</strong><small>El pulso del mercado en una sola vista.</small></div>
+                    <div><strong>Overview</strong><small><?= $canOverview ? 'El pulso del mercado en una sola vista.' : 'Inicia sesión o crea una cuenta para acceder.' ?></small></div>
+                    <?php if ($canOverview): ?>
                     <span class="home-tool-arrow" aria-hidden="true">↗</span>
+                    <?php else: ?>
+                    <svg class="home-tool-lock" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg>
+                    <?php endif; ?>
                 </a>
                 <a class="home-tool" href="<?= BASE_URL ?>calculadora">
                     <span class="home-tool-number">02</span>

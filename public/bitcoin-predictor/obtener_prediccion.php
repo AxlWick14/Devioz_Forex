@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/../../app/core/bootstrap.php';
+if (!Access::exigir('bitcoin-predictor-api', true)) exit;
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 $curl = curl_init('http://127.0.0.1:5000/predict');

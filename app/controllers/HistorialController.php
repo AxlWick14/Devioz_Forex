@@ -19,7 +19,7 @@ class HistorialController
             return;
         }
         $par = $_POST['par'] ?? '';
-        if (!is_string($par) || !in_array($par, ['BTC/USD', 'ETH/USD', 'USDT/USD', 'BNB/USD'], true)) {
+        if (!is_string($par) || !in_array($par, ['USD/PEN', 'EUR/USD', 'BTC/USD', 'ETH/USD', 'USDT/USD', 'BNB/USD'], true)) {
             http_response_code(400);
             echo json_encode(['error' => 'Activo no permitido.']);
             return;

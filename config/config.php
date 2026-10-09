@@ -8,6 +8,8 @@ $scriptDirectory = str_replace(
     dirname($_SERVER['SCRIPT_NAME'] ?? '/')
 );
 
+$scriptDirectory = preg_replace('#/bitcoin-predictor$#', '', $scriptDirectory);
+
 $baseUrl = rtrim(
     $scriptDirectory,
     '/'

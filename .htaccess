@@ -1,0 +1,7 @@
+Options -Indexes
+RewriteEngine On
+# Implementation, credentials and stored artifacts are not public routes.
+RewriteRule ^(?:app|config|database|storage|scripts|tests|\.git|\.codex|\.agents|\.aws)(?:/|$) - [F,L,NC]
+<FilesMatch "^(?:\.env.*|composer\.(?:json|lock)|AGENTS\.md)$">
+    Require all denied
+</FilesMatch>

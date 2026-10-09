@@ -1,9 +1,57 @@
 <?php
+require_once __DIR__ . '/Arima.php';
 
 /** Pure forecasting calculations, independent of the database. */
 final class ForecastMethods
 {
-    public const METHODS = ['lineal', 'logaritmica', 'holt'];
+    public const METHODS = ['lineal', 'logaritmica', 'holt', 'arima'];
+    public const AVAILABLE_METHODS = [...self::METHODS, 'boosting'];
+
+    public static function directionProbabilities(array $rows, string $method, int $window, float $target, float $last, int $horizon = 7): array
+    {
+        $unavailable = ['subida' => null, 'bajada' => null, 'evaluaciones' => 0];
+        if ($horizon < 1 || $horizon > 30 || $target <= 0 || $last <= 0) return $unavailable;
+        usort($rows, static fn($a, $b) => strcmp($a['fecha'], $b['fecha']));
+        $actuals = [];
+        foreach ($rows as $row) $actuals[substr($row['fecha'], 0, 10)] = (float) $row['precio_cierre'];
+        $up = 0.0;
+        $samples = 0;
+        // Replay past forecasts using only observations before each target date.
+        for ($index = max(10, count($rows) - 60); $index < count($rows); $index++) {
+            $training = array_slice($rows, max(0, $index - $window), min($index, $window));
+            $points = self::project($training, $method, $horizon);
+            if (!$points) continue;
+            $prediction = $points[array_key_last($points)];
+            $actual = $actuals[$prediction['fecha']] ?? null;
+            if ($actual === null || $actual <= 0) continue;
+            // Apply each observed relative forecast error to the current target.
+            $scenario = $target * $actual / $prediction['precio'];
+            $up += abs($scenario - $last) <= $last * 1e-8 ? 0.5 : ($scenario > $last ? 1 : 0);
+            $samples++;
+        }
+        if ($samples < 10) return [...$unavailable, 'evaluaciones' => $samples];
+        // Add one observation per direction to avoid claiming 0% or 100% certainty.
+        $probability = round(100 * ($up + 1) / ($samples + 2), 1);
+        return ['subida' => $probability, 'bajada' => round(100 - $probability, 1), 'evaluaciones' => $samples];
+    }
+
+    public static function bestModel(array $rows, string $asOf): array
+    {
+        usort($rows, static fn($a, $b) => strcmp($a['fecha'], $b['fecha']));
+        $best = [];
+        $bestError = INF;
+        foreach (self::METHODS as $method) {
+            $validation = self::calibrate($rows, $method);
+            $projection = self::project(array_slice($rows, -$validation['ventana']), $method, 7, $asOf, true);
+            if (!$projection) continue;
+            $error = $validation['error_mape'] ?? INF;
+            if (!$best || $error < $bestError) {
+                $best = ['metodo' => $method, 'validacion' => $validation, 'proyeccion' => $projection];
+                $bestError = $error;
+            }
+        }
+        return $best;
+    }
 
     public static function calibrate(array $rows, string $method): array
     {
@@ -74,7 +122,16 @@ final class ForecastMethods
         $lastX = $x[count($x) - 1];
         if ($lastX > 730) return []; // Avoid treating very sparse archives as a recent series.
 
-        if ($method === 'holt') {
+        if ($method === 'arima') {
+            $daily = [];
+            $previous = $prices[0];
+            for ($time = $origin; $time <= $lastTime; $time += 86400) {
+                $previous = $observations[$time] ?? $previous;
+                $daily[] = $previous;
+            }
+            $arimaProjection = Arima::forecast($daily, $gap + $horizon);
+            if (!$arimaProjection) return [];
+        } elseif ($method === 'holt') {
             // Daily grid: missing closes carry forward; these are not new observations.
             $level = $prices[0];
             $trend = ($prices[1] - $prices[0]) / ($x[1] - $x[0]);
@@ -103,7 +160,9 @@ final class ForecastMethods
         $result = [];
         for ($day = $includePresent ? 0 : 1; $day <= $horizon; $day++) {
             $steps = $gap + $day;
-            if ($method === 'holt') {
+            if ($method === 'arima') {
+                $prediction = $arimaProjection[$steps];
+            } elseif ($method === 'holt') {
                 $damping = 0.9 * (1 - 0.9 ** $steps) / (1 - 0.9);
                 $prediction = $level + $damping * $trend;
             } else {

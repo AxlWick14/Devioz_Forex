@@ -1,16 +1,19 @@
 <?php
 require_once __DIR__ . '/../core/Database.php';
 require_once __DIR__ . '/ForecastMethods.php';
+require_once __DIR__ . '/XgboostForecast.php';
 
 class Pronostico
 {
     private Database $database;
+    private ?array $xgboost = null;
+    private ?string $xgboostDate = null;
 
     private array $pares = [
+        'USD/PEN',
+        'EUR/USD',
         'BTC/USD',
         'ETH/USD',
-        'USDT/USD',
-        'BNB/USD',
     ];
 
     public function __construct()
@@ -39,16 +42,43 @@ class Pronostico
 
     public function generarPronostico(string $par, string $metodo = 'lineal'): array
     {
-        $historico = $this->obtenerHistorico($par, 120);
+        if (!in_array($metodo, [...ForecastMethods::AVAILABLE_METHODS, 'auto'], true)) {
+            throw new InvalidArgumentException('Método de pronóstico inválido.');
+        }
+        $hoy = (new DateTimeImmutable('now', new DateTimeZone('America/Lima')))->format('Y-m-d');
+        $historico = $this->obtenerHistorico($par, 120, $hoy);
 
         if (count($historico) < 10) {
             return [];
         }
-        $hoy = (new DateTimeImmutable('now', new DateTimeZone('America/Lima')))->format('Y-m-d');
-        $historico = array_values(array_filter($historico, static fn($row) => substr($row['fecha'], 0, 10) <= $hoy));
-        $validacion = ForecastMethods::calibrate($historico, $metodo);
+        $xgboost = null;
+        if ($metodo === 'auto' || $metodo === 'boosting') {
+            try {
+                $this->prepararXgboost($hoy);
+                $xgboost = $this->xgboost[$par] ?? null;
+            } catch (XgboostForecastException $error) {
+                if ($metodo === 'boosting') throw $error;
+                error_log($error->getMessage());
+            }
+        }
+        if ($metodo === 'auto') {
+            $best = ForecastMethods::bestModel($historico, $hoy);
+            if ($xgboost && (!$best || $xgboost['validacion']['error_mape'] < ($best['validacion']['error_mape'] ?? INF))) {
+                $best = ['metodo' => 'boosting', 'validacion' => $xgboost['validacion'], 'proyeccion' => $xgboost['proyeccion']];
+            }
+            if (!$best) return [];
+            $metodo = $best['metodo'];
+            $validacion = $best['validacion'];
+            $proyeccion = $best['proyeccion'];
+        } elseif ($metodo === 'boosting') {
+            if (!$xgboost) throw new XgboostForecastException('XGBoost necesita al menos 120 cierres recientes y datos suficientes para validar este activo.');
+            $validacion = $xgboost['validacion'];
+            $proyeccion = $xgboost['proyeccion'];
+        } else {
+            $validacion = ForecastMethods::calibrate($historico, $metodo);
+            $proyeccion = ForecastMethods::project(array_slice($historico, -$validacion['ventana']), $metodo, 7, $hoy, true);
+        }
         $ajuste = array_slice($historico, -$validacion['ventana']);
-        $proyeccion = ForecastMethods::project($ajuste, $metodo, 7, $hoy, true);
         if ($proyeccion === []) return [];
         $presente = array_shift($proyeccion);
 
@@ -67,12 +97,16 @@ class Pronostico
         $estimado = $proyeccion[array_key_last($proyeccion)]['precio'];
         $cambioEstimado = (($estimado - $precioActual) / max($precioActual, 0.00001)) * 100;
         $confianza = $this->calcularConfianza($cambioEstimado, $volatilidad);
+        $fechaBase = substr($historico[array_key_last($historico)]['fecha'], 0, 10);
+        $horizonteDesdeCierre = 7 + (int) round((strtotime($hoy . ' UTC') - strtotime($fechaBase . ' UTC')) / 86400);
+        $probabilidades = $metodo === 'boosting' ? $xgboost['probabilidades']
+            : ForecastMethods::directionProbabilities($historico, $metodo, $validacion['ventana'], $estimado, $precioActual, $horizonteDesdeCierre);
 
         return [
             'par' => $par,
             'metodo' => $metodo,
             'validacion' => $validacion,
-            'observaciones' => count($ajuste),
+            'observaciones' => $metodo === 'boosting' ? $xgboost['observaciones'] : count($ajuste),
             'fecha_base' => $historico[array_key_last($historico)]['fecha'],
             'fecha_presente' => $hoy,
             'precio_presente' => $presente['precio'],
@@ -82,6 +116,7 @@ class Pronostico
             'precio_estimado' => round($estimado, 6),
             'cambio_estimado' => round($cambioEstimado, 2),
             'confianza' => round($confianza, 2),
+            'probabilidades' => $probabilidades,
             'volatilidad' => round($volatilidad, 4),
             'tendencia' => $cambioEstimado >= 0 ? 'alcista' : 'bajista',
             'media_corta' => round($mediaCorta, 6),
@@ -90,18 +125,32 @@ class Pronostico
         ];
     }
 
-    private function obtenerHistorico(string $par, int $dias): array
+    private function prepararXgboost(string $hoy): void
+    {
+        if ($this->xgboostDate === $hoy) return;
+        $this->xgboostDate = $hoy;
+        $this->xgboost = [];
+        $histories = [];
+        foreach ($this->pares as $par) $histories[$par] = $this->obtenerHistorico($par, 600, $hoy);
+        // Windows counts wall time for PHP's limit; the cold batch needs time to validate four assets.
+        if (function_exists('set_time_limit')) set_time_limit(120);
+        $this->xgboost = XgboostForecast::prepare($histories, $hoy);
+    }
+
+    private function obtenerHistorico(string $par, int $dias, string $hasta): array
     {
         $sql = '
             SELECT par, fecha, precio_cierre
             FROM historico_cotizaciones
             WHERE par = :par
+              AND fecha < :hasta
             ORDER BY fecha DESC
             LIMIT :dias
         ';
 
         $stmt = $this->database->getConnection()->prepare($sql);
         $stmt->bindValue(':par', $par, PDO::PARAM_STR);
+        $stmt->bindValue(':hasta', $hasta, PDO::PARAM_STR);
         $stmt->bindValue(':dias', $dias, PDO::PARAM_INT);
         $stmt->execute();
 
